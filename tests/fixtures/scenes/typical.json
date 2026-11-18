@@ -1,0 +1,194 @@
+{
+    "name": "Directo de prueba",
+    "current_scene": "Juego",
+    "current_program_scene": "Juego",
+    "scene_order": [
+        { "name": "Juego" },
+        { "name": "Charla" },
+        { "name": "Pausa" }
+    ],
+    "sources": [
+        {
+            "name": "Juego",
+            "uuid": "00000000-0000-4000-8000-000000000001",
+            "id": "scene",
+            "versioned_id": "scene",
+            "enabled": true,
+            "settings": {
+                "id_counter": 7,
+                "custom_size": false,
+                "items": [
+                    { "name": "Captura del juego", "source_uuid": "00000000-0000-4000-8000-000000000010", "visible": true, "locked": false, "id": 1 },
+                    { "name": "Pantalla", "source_uuid": "00000000-0000-4000-8000-000000000011", "visible": false, "locked": false, "id": 2 },
+                    { "name": "Camara", "source_uuid": "00000000-0000-4000-8000-000000000012", "visible": true, "locked": false, "id": 3 },
+                    { "name": "Alertas", "source_uuid": "00000000-0000-4000-8000-000000000020", "visible": true, "locked": false, "id": 4 },
+                    { "name": "Superposiciones", "source_uuid": "00000000-0000-4000-8000-000000000090", "visible": true, "locked": false, "id": 5 },
+                    { "name": "Widget viejo", "source_uuid": "00000000-0000-4000-8000-000000000024", "visible": false, "locked": false, "id": 6 }
+                ]
+            },
+            "filters": []
+        },
+        {
+            "name": "Charla",
+            "uuid": "00000000-0000-4000-8000-000000000002",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "items": [
+                    { "name": "Camara", "source_uuid": "00000000-0000-4000-8000-000000000012", "visible": true },
+                    { "name": "Chat", "source_uuid": "00000000-0000-4000-8000-000000000021", "visible": true },
+                    { "name": "Juego", "source_uuid": "00000000-0000-4000-8000-000000000001", "visible": true }
+                ]
+            }
+        },
+        {
+            "name": "Pausa",
+            "uuid": "00000000-0000-4000-8000-000000000003",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": {
+                "items": [
+                    { "name": "Video de pausa", "source_uuid": "00000000-0000-4000-8000-000000000030", "visible": true },
+                    { "name": "Musica", "source_uuid": "00000000-0000-4000-8000-000000000031", "visible": true },
+                    { "name": "Cartel", "source_uuid": "00000000-0000-4000-8000-000000000032", "visible": true },
+                    { "name": "Texto", "source_uuid": "00000000-0000-4000-8000-000000000033", "visible": true },
+                    { "name": "Contador", "source_uuid": "00000000-0000-4000-8000-000000000025", "visible": true }
+                ]
+            }
+        },
+        {
+            "name": "Captura del juego",
+            "uuid": "00000000-0000-4000-8000-000000000010",
+            "id": "game_capture",
+            "versioned_id": "game_capture",
+            "settings": { "capture_mode": "window", "window": "Juego de prueba:UnityWndClass:juego.exe" }
+        },
+        {
+            "name": "Pantalla",
+            "uuid": "00000000-0000-4000-8000-000000000011",
+            "id": "monitor_capture",
+            "versioned_id": "monitor_capture",
+            "settings": { "method": 2, "monitor_id": "\\\\?\\DISPLAY#AAA0000#0000" }
+        },
+        {
+            "name": "Camara",
+            "uuid": "00000000-0000-4000-8000-000000000012",
+            "id": "dshow_input",
+            "versioned_id": "dshow_input",
+            "settings": {
+                "video_device_id": "Camara de prueba:\\\\?\\usb#vid_0000&pid_0000#0#{65e8773d-8f56-11d0-a3b9-00a0c9223196}\\global",
+                "res_type": 1,
+                "resolution": "3840x2160",
+                "frame_interval": 333333
+            },
+            "filters": [
+                { "name": "Fondo borroso", "uuid": "00000000-0000-4000-8000-000000000040", "id": "nv_background_blur_filter", "versioned_id": "nv_background_blur_filter", "enabled": true, "settings": {} },
+                { "name": "Color", "uuid": "00000000-0000-4000-8000-000000000041", "id": "color_filter", "versioned_id": "color_filter_v2", "enabled": true, "settings": {} }
+            ]
+        },
+        {
+            "name": "Alertas",
+            "uuid": "00000000-0000-4000-8000-000000000020",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "url": "https://alertas.example.invalid/widget?token=SECRETO-ALERTAS", "width": 1920, "height": 1080 }
+        },
+        {
+            "name": "Chat",
+            "uuid": "00000000-0000-4000-8000-000000000021",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "url": "https://chat.example.invalid/popout?key=SECRETO-CHAT", "width": 3840, "height": 2160, "shutdown": true }
+        },
+        {
+            "name": "Meta de seguidores",
+            "uuid": "00000000-0000-4000-8000-000000000022",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "url": "https://meta.example.invalid/w/123" }
+        },
+        {
+            "name": "Ticker",
+            "uuid": "00000000-0000-4000-8000-000000000023",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "is_local_file": true, "local_file": "C:/Users/StreamerDePrueba/Documents/ticker.html" }
+        },
+        {
+            "name": "Widget viejo",
+            "uuid": "00000000-0000-4000-8000-000000000024",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "url": "https://viejo.example.invalid/" }
+        },
+        {
+            "name": "Contador",
+            "uuid": "00000000-0000-4000-8000-000000000025",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "settings": { "url": "https://contador.example.invalid/" }
+        },
+        {
+            "name": "Navegador apagado",
+            "uuid": "00000000-0000-4000-8000-000000000026",
+            "id": "browser_source",
+            "versioned_id": "browser_source",
+            "enabled": false,
+            "settings": { "url": "https://apagado.example.invalid/" }
+        },
+        {
+            "name": "Video de pausa",
+            "uuid": "00000000-0000-4000-8000-000000000030",
+            "id": "ffmpeg_source",
+            "versioned_id": "ffmpeg_source",
+            "settings": { "local_file": "C:/Users/StreamerDePrueba/Videos/pausa-en-bucle.MP4", "looping": true }
+        },
+        {
+            "name": "Musica",
+            "uuid": "00000000-0000-4000-8000-000000000031",
+            "id": "ffmpeg_source",
+            "versioned_id": "ffmpeg_source",
+            "settings": { "local_file": "C:/Users/StreamerDePrueba/Music/fondo.mp3", "looping": true }
+        },
+        {
+            "name": "Cartel",
+            "uuid": "00000000-0000-4000-8000-000000000032",
+            "id": "image_source",
+            "versioned_id": "image_source",
+            "settings": { "file": "C:/Users/StreamerDePrueba/Pictures/cartel.png" }
+        },
+        {
+            "name": "Texto",
+            "uuid": "00000000-0000-4000-8000-000000000033",
+            "id": "text_gdiplus",
+            "versioned_id": "text_gdiplus_v3",
+            "settings": { "text": "Vuelvo enseguida" }
+        },
+        {
+            "name": "Mic/Aux",
+            "uuid": "00000000-0000-4000-8000-000000000050",
+            "id": "wasapi_input_capture",
+            "versioned_id": "wasapi_input_capture",
+            "settings": { "device_id": "default" },
+            "filters": [
+                { "name": "Supresion de ruido", "id": "noise_suppress_filter", "versioned_id": "noise_suppress_filter_v2", "enabled": true, "settings": { "method": "rnnoise" } }
+            ]
+        }
+    ],
+    "groups": [
+        {
+            "name": "Superposiciones",
+            "uuid": "00000000-0000-4000-8000-000000000090",
+            "id": "group",
+            "versioned_id": "group",
+            "settings": {
+                "items": [
+                    { "name": "Meta de seguidores", "source_uuid": "00000000-0000-4000-8000-000000000022", "visible": true },
+                    { "name": "Ticker", "source_uuid": "00000000-0000-4000-8000-000000000023", "visible": true }
+                ]
+            }
+        }
+    ],
+    "modules": {},
+    "version": 2
+}

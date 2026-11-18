@@ -1,0 +1,26 @@
+{
+    "current_scene": "Principal",
+    "name": "Coleccion vieja",
+    "sources": [
+        {
+            "id": "scene",
+            "name": "Principal",
+            "settings": {
+                "items": [
+                    { "name": "Navegador", "visible": true },
+                    { "name": "Ventana", "visible": true }
+                ]
+            }
+        },
+        {
+            "id": "browser_source",
+            "name": "Navegador",
+            "settings": { "url": "file:///C:/Users/StreamerDePrueba/overlay.html", "width": 2560, "height": 1440 }
+        },
+        {
+            "id": "window_capture",
+            "name": "Ventana",
+            "settings": { "method": 1, "window": "Mi programa:Clase:programa.exe" }
+        }
+    ]
+}

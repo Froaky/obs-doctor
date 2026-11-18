@@ -1,0 +1,25 @@
+{
+    "name": "Sin título",
+    "DesktopAudioDevice1": {
+        "name": "Audio del escritorio",
+        "uuid": "00000000-0000-4000-8000-0000000000a1",
+        "id": "wasapi_output_capture",
+        "versioned_id": "wasapi_output_capture",
+        "settings": { "device_id": "default" }
+    },
+    "sources": [
+        {
+            "name": "Escena",
+            "uuid": "00000000-0000-4000-8000-0000000000b1",
+            "id": "scene",
+            "versioned_id": "scene",
+            "settings": { "id_counter": 0, "custom_size": false, "items": [] }
+        }
+    ],
+    "groups": [],
+    "scene_order": [ { "name": "Escena" } ],
+    "current_scene": "Escena",
+    "current_program_scene": "Escena",
+    "canvases": [],
+    "version": 2
+}
