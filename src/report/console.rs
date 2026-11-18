@@ -6,7 +6,7 @@ use std::path::Path;
 
 use colored::{ColoredString, Colorize};
 
-use super::text::{plural, wrap};
+use super::text::wrap;
 use crate::model::{Advice, Level, ProgramCard, ProgramKind, ReportData, Row, Section, Tone, Verdict};
 
 const WIDTH: usize = 78;
@@ -88,17 +88,9 @@ fn print_headline(data: &ReportData) {
         Verdict::NeedsWork => headline.red(),
     };
     println!("  {headline}");
-    let important = data.advice.iter().filter(|a| a.level == Level::Important).count();
-    let rest = data.advice.len() - important;
     if !data.advice.is_empty() {
-        let mut parts = Vec::new();
-        if important > 0 {
-            parts.push(plural(important, "cambio importante", "cambios importantes"));
-        }
-        if rest > 0 {
-            parts.push(plural(rest, "mejora recomendada", "mejoras recomendadas"));
-        }
-        println!("  {}", parts.join(" y ").dimmed());
+        // Same tally as the HTML report, one count per level.
+        println!("  {}", super::html::tally(&data.advice).dimmed());
     }
     println!();
 }
@@ -113,7 +105,7 @@ fn level_tag(level: Level) -> ColoredString {
     match level {
         Level::Important => "[IMPORTANTE]".red().bold(),
         Level::Recommended => "[RECOMENDADO]".yellow().bold(),
-        Level::Tip => "[CONSEJO]".blue().bold(),
+        Level::Tip => "[PARA PROBAR]".blue().bold(),
     }
 }
 

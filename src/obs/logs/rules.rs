@@ -141,7 +141,7 @@ fn dropped_frames(stream: &StreamStats, pct: f32, when: &str) -> Advice {
 
 /// A fifth less, rounded down to hundreds: a step big enough to notice,
 /// small enough not to ruin the picture. Something to try, not a rule.
-fn lower_bitrate(kbps: u32) -> u32 {
+pub(crate) fn lower_bitrate(kbps: u32) -> u32 {
     (kbps / 5 * 4 / 100 * 100).max(500)
 }
 

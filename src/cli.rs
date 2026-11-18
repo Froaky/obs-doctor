@@ -31,10 +31,10 @@ USO
   obs-doctor [opciones]
 
 OPCIONES
-  --sin-internet       No mide tu conexión (no envía ni descarga datos de prueba)
+  --sin-internet       No usa internet (hoy tampoco lo usa sin esta opción)
   --consola            Muestra el reporte completo aquí, sin abrir el navegador
   --no-abrir           Guarda el reporte pero no lo abre
-  --salida <archivo>   Dónde guardar el reporte (por defecto, en tu carpeta de usuario)
+  --salida <archivo>   Dónde guardar el reporte (por defecto, %LOCALAPPDATA%\\obs-doctor\\reporte.html)
   --obs-dir <carpeta>  Carpeta de configuración de OBS (para instalaciones portables)
   -h, --ayuda          Muestra esta ayuda
   -V, --version        Muestra la versión

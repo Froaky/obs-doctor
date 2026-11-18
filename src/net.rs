@@ -162,13 +162,13 @@ fn signal_dbm(quality: u32) -> i32 {
 /// rules of thumb for live video over wifi, not a standard: about -67 dBm or
 /// better is reliable, below about -80 dBm connections start to drop.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Signal {
+pub(crate) enum Signal {
     Good,
     Fair,
     Weak,
 }
 
-fn signal_class(quality: u32) -> Signal {
+pub(crate) fn signal_class(quality: u32) -> Signal {
     match signal_dbm(quality) {
         d if d >= -67 => Signal::Good,
         d if d >= -80 => Signal::Fair,

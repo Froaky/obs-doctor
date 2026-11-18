@@ -20,6 +20,7 @@ use super::ObsPaths;
 use super::config::EncoderKind;
 
 pub use rules::advise;
+pub(crate) use rules::lower_bitrate;
 pub use sections::sections;
 
 /// OBS keeps 10 logs unless told otherwise (`MaxLogs` default in OBS 33,

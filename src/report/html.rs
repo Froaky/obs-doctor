@@ -110,7 +110,7 @@ fn level_label(level: Level) -> &'static str {
 }
 
 /// "1 importante, 2 recomendados y 1 para probar".
-fn tally(advice: &[Advice]) -> String {
+pub(crate) fn tally(advice: &[Advice]) -> String {
     let count = |level| advice.iter().filter(|a| a.level == level).count();
     let parts: Vec<String> = [
         (count(Level::Important), "importante", "importantes"),
