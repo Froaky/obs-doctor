@@ -594,11 +594,20 @@ mod tests {
             height: 1080,
             fps: 60,
             bitrate_kbps: 6000,
+            ..Suggested::default()
         }
     }
 
     fn modest(encoder: EncoderKind) -> Suggested {
-        Suggested { encoder, encoder_label: "x".into(), width: 1280, height: 720, fps: 30, bitrate_kbps: 3000 }
+        Suggested {
+            encoder,
+            encoder_label: "x".into(),
+            width: 1280,
+            height: 720,
+            fps: 30,
+            bitrate_kbps: 3000,
+            ..Suggested::default()
+        }
     }
 
     /// Facts for a PC with a given OBS profile and a hand-made suggestion.
