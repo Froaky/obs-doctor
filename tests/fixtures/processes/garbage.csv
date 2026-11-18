@@ -1,0 +1,7 @@
+# Lines a broken snapshot could hold. Only the last one is valid.
+;;;;
+chrome.exe;explorer.exe;0;muchos;1.0
+chrome.exe
+discord.exe;explorer.exe;0;-5;0.2
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+spotify.exe;explorer.exe;0;120;0.5

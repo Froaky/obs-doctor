@@ -1,0 +1,25 @@
+# Synthetic snapshot of a streamer's PC, already averaged.
+# exe;parent exe;inside a game library (0/1);memory in MB;processor %
+System;;0;1;0.5
+svchost.exe;services.exe;0;2400;3.0
+MsMpEng.exe;services.exe;0;350;1.0
+explorer.exe;;0;180;0.4
+dwm.exe;;0;200;2.0
+obs64.exe;explorer.exe;0;850;9.0
+obs-browser-page.exe;obs64.exe;0;300;1.0
+chrome.exe;explorer.exe;0;400;1.5
+chrome.exe;chrome.exe;0;350;0.5
+chrome.exe;chrome.exe;0;250;0.2
+Discord.exe;explorer.exe;0;220;0.6
+Discord.exe;Discord.exe;0;180;0.3
+steam.exe;explorer.exe;0;90;0.2
+steamwebhelper.exe;steam.exe;0;120;0.3
+steamerrorreporter64.exe;steam.exe;0;40;0.0
+qbittorrent.exe;explorer.exe;0;60;0.1
+Streamer.bot.exe;explorer.exe;0;140;0.4
+WaveLink.exe;explorer.exe;0;90;0.2
+MiJuegoIndie.exe;steam.exe;1;3100;28.0
+UnityCrashHandler64.exe;MiJuegoIndie.exe;1;10;0.0
+EasyAntiCheat_EOS.exe;services.exe;0;60;0.3
+editor-raro.exe;explorer.exe;0;1500;2.0
+cosita.exe;explorer.exe;0;30;0.1
