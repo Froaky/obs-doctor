@@ -1,0 +1,39 @@
+name: Algo no funciona o un consejo está mal
+description: El doctor falló, mostró un dato equivocado o te dio un consejo que no corresponde.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por avisar. Un consejo equivocado es el peor error que puede tener esta herramienta, así que estos reportes son los que más ayudan.
+
+        **Antes de pegar nada:** el reporte de OBS Doctor no incluye tu clave de transmisión, pero revisa igual que no estés pegando claves, contraseñas ni datos personales.
+  - type: textarea
+    id: que-paso
+    attributes:
+      label: ¿Qué pasó?
+      description: Qué esperabas ver y qué viste en su lugar.
+    validations:
+      required: true
+  - type: textarea
+    id: reporte
+    attributes:
+      label: Reporte del doctor
+      description: Ejecuta `obs-doctor.exe --consola` y pega aquí lo que muestra (o la parte que está mal).
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Versión de OBS Doctor
+      description: La ves con `obs-doctor.exe --version`.
+    validations:
+      required: true
+  - type: input
+    id: obs
+    attributes:
+      label: Versión de OBS Studio
+  - type: input
+    id: windows
+    attributes:
+      label: Versión de Windows
+      placeholder: Windows 11 24H2
