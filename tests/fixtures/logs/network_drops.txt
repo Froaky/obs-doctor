@@ -1,0 +1,42 @@
+19:00:00.000: Running as administrator: false
+19:00:00.500: OBS 33.0.1 (64-bit, windows)
+19:00:01.000: Available Encoders:
+19:00:01.000:   Video Encoders:
+19:00:01.000: 	- obs_x264 (x264)
+19:00:01.000:   Audio Encoders:
+19:00:01.000: 	- ffmpeg_aac (FFmpeg AAC)
+19:29:58.000: [x264 encoder: 'advanced_video_stream'] preset: veryfast
+19:29:58.000: [x264 encoder: 'advanced_video_stream'] settings:
+19:29:58.000: 	rate_control: CBR
+19:29:58.000: 	bitrate:      4500
+19:29:58.000: 	buffer size:  4500
+19:29:58.000: 	crf:          23
+19:29:58.000: 	fps_num:      30
+19:29:58.000: 	fps_den:      1
+19:29:58.000: 	width:        1280
+19:29:58.000: 	height:       720
+19:29:58.000: 	keyint:       60
+19:29:58.000:
+19:29:59.000: [rtmp stream: 'adv_stream'] Dynamic bitrate enabled.  Dropped frames begone!
+19:29:59.100: [rtmp stream: 'adv_stream'] Connecting to RTMP URL rtmp://servidor.ejemplo/app...
+19:29:59.200: [rtmp stream: 'adv_stream'] Interface: Adaptador inalambrico de ejemplo (802.11, 144↓/144↑ mbps)
+19:29:59.300: [rtmp stream: 'adv_stream'] Connection to rtmp://servidor.ejemplo/app (192.0.2.10) successful
+19:30:00.000: ==== Streaming Start ===============================================
+19:45:10.000: [rtmp stream: 'adv_stream'] bitrate decreased to: 3800
+19:45:20.000: [rtmp stream: 'adv_stream'] bitrate decreased to: 3100
+19:52:00.000: [rtmp stream: 'adv_stream'] bitrate increased to: 4500, done
+20:01:00.000: [rtmp stream: 'adv_stream'] Disconnected from rtmp://servidor.ejemplo/app
+20:01:00.100: Output 'adv_stream': Reconnecting in 2.00 seconds..
+20:01:02.200: [rtmp stream: 'adv_stream'] Connection to rtmp://servidor.ejemplo/app (192.0.2.10) successful
+20:20:00.000: [rtmp stream: 'adv_stream'] bitrate decreased to: 3800
+20:35:00.000: [rtmp stream: 'adv_stream'] Disconnected from rtmp://servidor.ejemplo/app
+20:35:00.100: Output 'adv_stream': Reconnecting in 2.00 seconds..
+20:35:02.100: Output 'adv_stream': Reconnecting in 4.00 seconds..
+20:35:06.300: [rtmp stream: 'adv_stream'] Connection to rtmp://servidor.ejemplo/app (192.0.2.10) successful
+21:30:00.000: [rtmp stream: 'adv_stream'] User stopped the stream
+21:30:00.100: Output 'adv_stream': stopping
+21:30:00.100: Output 'adv_stream': Total frames output: 198960 (216720 attempted)
+21:30:00.100: Output 'adv_stream': Total drawn frames: 216000
+21:30:00.100: Output 'adv_stream': Number of dropped frames due to insufficient bandwidth/connection stalls: 17760 (8.2%)
+21:30:01.000: ==== Streaming Stop ================================================
+21:31:00.000: ==== Shutting down ==================================================

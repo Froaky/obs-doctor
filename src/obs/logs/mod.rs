@@ -207,6 +207,8 @@ impl Startup {
     }
 
     /// Refresh rate shared by every monitor, when they all agree.
+    // Offered to the hardware and suggest areas, which do not use it yet.
+    #[allow(dead_code)]
     pub fn common_refresh_hz(&self) -> Option<u32> {
         let mut rates = self.adapters.iter().flat_map(|a| &a.monitors).map(|m| m.refresh_hz).filter(|hz| *hz > 0);
         let first = rates.next()?;
@@ -309,8 +311,15 @@ mod tests {
     const RECORDING_ONLY: &str = include_str!("../../../tests/fixtures/logs/recording_only.txt");
     const NO_OUTPUT: &str = include_str!("../../../tests/fixtures/logs/no_output.txt");
 
+    /// Sessions newest first, one day apart, the newest on 17/11/2026.
     fn sessions(texts: &[&str]) -> impl Iterator<Item = parse::Session> {
-        texts.iter().map(|text| parse::parse(text, None)).collect::<Vec<_>>().into_iter()
+        let days = ["2026-11-17", "2026-11-16", "2026-11-15", "2026-11-14"];
+        texts
+            .iter()
+            .zip(days.iter().chain(std::iter::repeat(&"2026-11-01")))
+            .map(|(text, day)| parse::parse(text, parse::Date::parse(day)))
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 
     #[test]

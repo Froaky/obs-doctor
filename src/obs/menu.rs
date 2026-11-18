@@ -18,6 +18,9 @@ pub const RATE_CONTROL: &str = "Control de la frecuencia";
 pub const PRESET_SIMPLE: &str = "Preajuste del codificador";
 pub const PRESET_X264: &str = "Perfil de uso de CPU";
 pub const AUTO_CONFIG: &str = "Asistente de configuración automática";
+pub const ADVANCED: &str = "Avanzado";
+/// Group and checkbox in Ajustes > Avanzado.
+pub const RECONNECT: &str = "Reconectar automáticamente";
 
 /// "En OBS abre Ajustes > Salida."
 pub fn open(tab: &str) -> String {

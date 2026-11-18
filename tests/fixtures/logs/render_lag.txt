@@ -1,0 +1,27 @@
+21:00:00.000: Running as administrator: false
+21:00:00.500: OBS 33.0.1 (64-bit, windows)
+21:00:01.000: Available Encoders:
+21:00:01.000:   Video Encoders:
+21:00:01.000: 	- obs_qsv11_v2 (QuickSync H.264)
+21:00:01.000: 	- obs_x264 (x264)
+21:00:01.000:   Audio Encoders:
+21:00:01.000: 	- ffmpeg_aac (FFmpeg AAC)
+21:09:58.000: [qsv encoder: 'simple_video_stream'] settings:
+21:09:58.000: 	codec:          H.264
+21:09:58.000: 	rate_control:   CBR
+21:09:58.000: 	target_bitrate: 3500
+21:09:58.000: 	fps_num:        30
+21:09:58.000: 	fps_den:        1
+21:09:58.000: 	width:          1280
+21:09:58.000: 	height:         720
+21:09:59.000: [rtmp stream: 'simple_stream'] Interface: Adaptador de ejemplo (type 6, 100↓/100↑ mbps)
+21:10:00.000: ==== Streaming Start ===============================================
+21:30:00.000: Device Remove/Reset!  Rebuilding all assets...
+21:31:00.000: Max audio buffering reached!
+22:10:00.000: [rtmp stream: 'simple_stream'] User stopped the stream
+22:10:00.100: Output 'simple_stream': stopping
+22:10:00.100: Output 'simple_stream': Total frames output: 108000
+22:10:00.100: Output 'simple_stream': Total drawn frames: 100764 (108000 attempted)
+22:10:00.100: Output 'simple_stream': Number of lagged frames due to rendering lag/stalls: 7236 (6.7%)
+22:10:01.000: ==== Streaming Stop ================================================
+22:11:00.000: ==== Shutting down ==================================================

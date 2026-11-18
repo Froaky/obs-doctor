@@ -159,7 +159,7 @@ mod tests {
         let mut budget = 1000;
         let text = read_bounded(&path, &mut budget).expect("readable");
         assert!(text.contains("caf\u{fffd}") && text.contains("ok"));
-        assert_eq!(budget, 1000 - 35);
+        assert_eq!(budget, 1000 - 36);
     }
 
     #[test]

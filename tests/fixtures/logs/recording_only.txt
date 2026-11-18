@@ -1,0 +1,18 @@
+18:00:00.000: Running as administrator: false
+18:00:00.500: OBS 33.0.1 (64-bit, windows)
+18:00:01.000: Available Encoders:
+18:00:01.000:   Video Encoders:
+18:00:01.000: 	- obs_x264 (x264)
+18:00:01.000:   Audio Encoders:
+18:00:01.000: 	- ffmpeg_aac (FFmpeg AAC)
+18:04:59.000: [x264 encoder: 'simple_video_recording'] settings:
+18:04:59.000: 	rate_control: CRF
+18:04:59.000: 	fps_num:      30
+18:04:59.000: 	fps_den:      1
+18:05:00.000: ==== Recording Start ===============================================
+18:15:00.000: Output 'simple_file_output': stopping
+18:15:00.000: Output 'simple_file_output': Total frames output: 18000
+18:15:00.000: Output 'simple_file_output': Total drawn frames: 18000
+18:15:00.100: Video stopped, number of skipped frames due to encoding lag: 450/18000 (2.5%)
+18:15:00.000: ==== Recording Stop ================================================
+18:20:00.000: ==== Shutting down ==================================================
