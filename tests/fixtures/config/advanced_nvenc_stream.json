@@ -1,0 +1,1 @@
+{"bitrate":8000,"rate_control":"cbr","preset":"p7","tune":"hq","multipass":"fullres","lookahead":true,"adaptive_quantization":true,"bf":4,"keyint_sec":0}
