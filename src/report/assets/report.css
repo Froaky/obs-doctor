@@ -1,5 +1,5 @@
 /* Report styles. html.rs inlines this file as it is, so it must stay
-   self-contained: no url(), no @import, nothing the browser would fetch. */
+   self-contained: no external references, nothing the browser would fetch. */
 
 :root {
   color-scheme: light dark;

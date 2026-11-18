@@ -165,7 +165,8 @@ pub fn sections(facts: &Facts) -> Vec<Section> {
         return Vec::new();
     }
     let mut section = Section::new("pc", "Tu PC");
-    let mut cpu_row = Row::new("Procesador", format!("{} ({} núcleos)", hw.cpu_name, hw.physical_cores));
+    let mut cpu_row =
+        Row::new("Procesador", format!("{} ({} núcleos)", text::product_name(&hw.cpu_name), hw.physical_cores));
     if let Some(note) = cpu_note(&hw.cpu()) {
         cpu_row = cpu_row.note(note);
     }
@@ -197,7 +198,7 @@ pub fn sections(facts: &Facts) -> Vec<Section> {
         } else {
             format!("dedicada, {} GB", text::gb(gpu.vram_bytes))
         };
-        let mut row = Row::new("Placa de video", format!("{} ({kind})", gpu.name));
+        let mut row = Row::new("Placa de video", format!("{} ({kind})", text::product_name(&gpu.name)));
         let listed = gpu.encoder_kind().and_then(|kind| facts.logs.can_encode_with(kind));
         if let Some(note) = gpu_note(gpu, listed).filter(|_| gpu.vendor != GpuVendor::Other) {
             row = row.note(note);

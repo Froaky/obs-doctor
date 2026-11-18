@@ -46,6 +46,28 @@ pub fn plural(count: usize, one: &str, many: &str) -> String {
     if count == 1 { format!("1 {one}") } else { format!("{count} {many}") }
 }
 
+/// A hardware name as people say it: "Intel(R) Core(TM) i5-10400F CPU" becomes
+/// "Intel Core i5-10400F CPU". Windows reports names with trademark marks that
+/// only add noise on screen. Only for display: the classification in
+/// `hardware::tiers` keeps reading the raw name.
+pub fn product_name(raw: &str) -> String {
+    const MARKS: [&str; 5] = ["(r)", "(tm)", "(c)", "®", "™"];
+    let mut out = String::with_capacity(raw.len());
+    let mut rest = raw;
+    'scan: while let Some(c) = rest.chars().next() {
+        for mark in MARKS {
+            // `get` keeps this safe when the mark would end inside a multibyte char.
+            if rest.get(..mark.len()).is_some_and(|head| head.eq_ignore_ascii_case(mark)) {
+                rest = &rest[mark.len()..];
+                continue 'scan;
+            }
+        }
+        out.push(c);
+        rest = &rest[c.len_utf8()..];
+    }
+    out.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
 /// Breaks text into lines of at most `width` characters without cutting words.
 pub fn wrap(text: &str, width: usize) -> Vec<String> {
     let mut lines = Vec::new();
@@ -94,6 +116,16 @@ mod tests {
     fn plurals() {
         assert_eq!(plural(1, "programa", "programas"), "1 programa");
         assert_eq!(plural(3, "programa", "programas"), "3 programas");
+    }
+
+    #[test]
+    fn product_names_lose_trademark_marks() {
+        assert_eq!(product_name("Intel(R) Core(TM) i5-10400F CPU @ 2.90GHz"), "Intel Core i5-10400F CPU @ 2.90GHz");
+        assert_eq!(product_name("AMD Radeon(TM) Graphics"), "AMD Radeon Graphics");
+        assert_eq!(product_name("NVIDIA GeForce® RTX™ 3060"), "NVIDIA GeForce RTX 3060");
+        assert_eq!(product_name("intel(r) uhd (tm"), "intel uhd (tm");
+        assert_eq!(product_name("  "), "");
+        assert_eq!(product_name("Placa ñandú (TM)"), "Placa ñandú");
     }
 
     #[test]

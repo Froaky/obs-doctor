@@ -124,7 +124,9 @@ pub fn suggest(facts: &Facts) -> Suggested {
     }
 
     let (encoder, encoder_label, gpu_name, why_encoder) = match &pick {
-        Some(p) => (p.kind, label_for(p.kind).to_string(), Some(p.gpu.name.clone()), Some(encoder_reason(p))),
+        Some(p) => {
+            (p.kind, label_for(p.kind).to_string(), Some(text::product_name(&p.gpu.name)), Some(encoder_reason(p)))
+        }
         None => (EncoderKind::Software, SOFTWARE_LABEL.to_string(), None, Some(software_reason(hw, &skipped))),
     };
 
@@ -274,7 +276,7 @@ fn label_for(kind: EncoderKind) -> &'static str {
 }
 
 fn encoder_reason(p: &Pick) -> String {
-    let name = &p.gpu.name;
+    let name = text::product_name(&p.gpu.name);
     match (p.integrated, p.quality) {
         (false, VideoEncoder::Modern) => {
             format!("Tu {name} prepara el video sola y con buena calidad, sin quitarle fuerza al procesador.")
@@ -289,10 +291,10 @@ fn encoder_reason(p: &Pick) -> String {
 fn software_reason(hw: &Hardware, skipped: &[Skip]) -> String {
     let first = skipped.first().map(|skip| match skip {
         Skip::NotListed(gpu) => {
-            format!("OBS no ofreció tu {} para preparar el video la última vez que se abrió, así que lo hace el procesador.", gpu.name)
+            format!("OBS no ofreció tu {} para preparar el video la última vez que se abrió, así que lo hace el procesador.", text::product_name(&gpu.name))
         }
         Skip::NoEncoder(gpu) => {
-            format!("Tu {} no puede preparar el video para OBS, así que lo hace el procesador.", gpu.name)
+            format!("Tu {} no puede preparar el video para OBS, así que lo hace el procesador.", text::product_name(&gpu.name))
         }
     });
     first.unwrap_or_else(|| {
