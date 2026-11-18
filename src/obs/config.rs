@@ -6,15 +6,20 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use super::ObsPaths;
+use crate::facts::Facts;
 use crate::ini::Ini;
+use crate::model::{Row, Section};
+use crate::report::text;
 
 /// OBS only writes a value to disk once you change it; these are its defaults.
 const DEFAULT_BITRATE_KBPS: u32 = 2500;
 const DEFAULT_FPS: f32 = 30.0;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum EncoderKind {
     /// x264 and friends: the processor does the work.
+    #[default]
     Software,
     Nvidia,
     Amd,
@@ -66,70 +71,94 @@ pub struct ObsConfig {
     pub rate_control: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ObsStatus {
     /// No config folder: OBS is not installed or was never opened.
-    NotFound { looked_in: PathBuf },
+    NotFound {
+        looked_in: PathBuf,
+    },
     /// The folder exists but there is no usable profile inside.
-    NoProfile { dir: PathBuf },
+    NoProfile {
+        dir: PathBuf,
+    },
     Found(ObsConfig),
 }
 
-pub fn read(dir_override: Option<PathBuf>) -> ObsStatus {
-    let dir = dir_override.unwrap_or_else(default_dir);
-    if !dir.is_dir() {
-        return ObsStatus::NotFound { looked_in: dir };
-    }
-    match find_profile(&dir) {
-        Some(profile_dir) => match read_profile(&profile_dir) {
-            Some(cfg) => ObsStatus::Found(cfg),
-            None => ObsStatus::NoProfile { dir },
-        },
-        None => ObsStatus::NoProfile { dir },
+impl Default for ObsStatus {
+    fn default() -> Self {
+        ObsStatus::NotFound { looked_in: PathBuf::new() }
     }
 }
 
-fn default_dir() -> PathBuf {
-    #[cfg(windows)]
-    let base = std::env::var_os("APPDATA").map(PathBuf::from);
-    #[cfg(target_os = "macos")]
-    let base = std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support"));
-    #[cfg(all(unix, not(target_os = "macos")))]
-    let base = std::env::var_os("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")));
-
-    base.unwrap_or_default().join("obs-studio")
+pub fn read(paths: &ObsPaths) -> ObsStatus {
+    if !paths.exists {
+        return ObsStatus::NotFound { looked_in: paths.config_dir.clone() };
+    }
+    match paths.profile_dir.as_deref().and_then(read_profile) {
+        Some(config) => ObsStatus::Found(config),
+        None => ObsStatus::NoProfile { dir: paths.config_dir.clone() },
+    }
 }
 
-/// The profile OBS has selected, or the most recently used one as a fallback.
-fn find_profile(dir: &Path) -> Option<PathBuf> {
-    let profiles = dir.join("basic").join("profiles");
-
-    // Newer OBS versions keep the selection in user.ini, older ones in global.ini.
-    for file in ["user.ini", "global.ini"] {
-        let Ok(text) = fs::read_to_string(dir.join(file)) else {
-            continue;
-        };
-        let ini = Ini::parse(&text);
-        if let Some(name) = ini.get("Basic", "ProfileDir") {
-            let candidate = profiles.join(name);
-            if candidate.join("basic.ini").is_file() {
-                return Some(candidate);
+/// The "Tu OBS" block of the report.
+pub fn sections(facts: &Facts) -> Vec<Section> {
+    let mut section = Section::new("obs", "Tu OBS");
+    match &facts.obs {
+        ObsStatus::NotFound { looked_in } => {
+            section = section.intro(
+                "No encontré la configuración de OBS. Si ya lo instalaste, ábrelo una vez y vuelve a ejecutar el doctor.                  Mientras tanto, más abajo te dejo con qué configuración empezar.",
+            );
+            if !looked_in.as_os_str().is_empty() {
+                section.push(Row::new("Busqué en", looked_in.display().to_string()));
             }
         }
+        ObsStatus::NoProfile { dir } => {
+            section = section.intro(
+                "Encontré OBS, pero todavía no tiene ningún perfil guardado. Ábrelo una vez y vuelve a ejecutar el doctor.",
+            );
+            section.push(Row::new("Busqué en", dir.display().to_string()));
+        }
+        ObsStatus::Found(config) => {
+            section.push(Row::new("Perfil", config.profile.clone()));
+            section.push(Row::new(
+                "Transmite a",
+                config.service.clone().unwrap_or_else(|| "Sin plataforma elegida (o servidor propio)".to_string()),
+            ));
+            let picture = match config.output {
+                Some((w, h)) => format!("{w}x{h} a {} fps", text::fps(config.fps)),
+                None => format!("tamaño sin definir, a {} fps", text::fps(config.fps)),
+            };
+            let mut picture_row = Row::new("Imagen", picture);
+            if let (Some(base), Some(out)) = (config.base, config.output)
+                && base != out
+            {
+                picture_row = picture_row
+                    .note(format!("Tu lienzo en OBS es de {}x{}; se achica antes de enviarlo.", base.0, base.1));
+            }
+            section.push(picture_row);
+            section.push(Row::new("Calidad de envío", format!("{} kbps", config.bitrate_kbps)));
+            section.push(Row::new("Quién prepara el video", encoder_text(config)));
+            section.push(Row::new(
+                "Modo",
+                match config.mode {
+                    OutputMode::Simple => "Sencillo",
+                    OutputMode::Advanced => "Avanzado",
+                },
+            ));
+        }
     }
+    vec![section]
+}
 
-    fs::read_dir(&profiles)
-        .ok()?
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .filter(|p| p.join("basic.ini").is_file())
-        .max_by_key(|p| {
-            fs::metadata(p.join("basic.ini"))
-                .and_then(|m| m.modified())
-                .ok()
-        })
+fn encoder_text(config: &ObsConfig) -> String {
+    let who = match config.encoder {
+        EncoderKind::Software => "el procesador",
+        EncoderKind::Nvidia => "tu placa NVIDIA",
+        EncoderKind::Amd => "tu placa AMD",
+        EncoderKind::Intel => "tu gráfica Intel",
+        EncoderKind::Other => "un codificador que no reconozco",
+    };
+    format!("{who} ({})", config.encoder_id)
 }
 
 fn read_profile(profile_dir: &Path) -> Option<ObsConfig> {
@@ -138,12 +167,7 @@ fn read_profile(profile_dir: &Path) -> Option<ObsConfig> {
     let service = fs::read_to_string(profile_dir.join("service.json")).ok();
     let fallback_name = profile_dir.file_name()?.to_string_lossy().into_owned();
 
-    Some(parse_profile(
-        &basic,
-        stream_encoder.as_deref(),
-        service.as_deref(),
-        &fallback_name,
-    ))
+    Some(parse_profile(&basic, stream_encoder.as_deref(), service.as_deref(), &fallback_name))
 }
 
 /// Pure parsing, separated from the filesystem so it can be tested.
@@ -172,11 +196,7 @@ pub fn parse_profile(
         ),
         OutputMode::Advanced => (
             ini.get("AdvOut", "Encoder").unwrap_or("obs_x264").to_string(),
-            encoder_settings
-                .get("bitrate")
-                .and_then(|v| v.as_u64())
-                .map(|b| b as u32)
-                .unwrap_or(DEFAULT_BITRATE_KBPS),
+            encoder_settings.get("bitrate").and_then(|v| v.as_u64()).map(|b| b as u32).unwrap_or(DEFAULT_BITRATE_KBPS),
             json_str(&encoder_settings, "preset"),
             Some(json_str(&encoder_settings, "rate_control").unwrap_or_else(|| "CBR".to_string())),
         ),
@@ -216,10 +236,7 @@ fn fps(ini: &Ini) -> f32 {
             _ => None,
         },
         // "Common" values are text such as "60", "59.94" or "29.97 NTSC".
-        _ => ini
-            .get("Video", "FPSCommon")
-            .and_then(|v| v.split_whitespace().next())
-            .and_then(|v| v.parse().ok()),
+        _ => ini.get("Video", "FPSCommon").and_then(|v| v.split_whitespace().next()).and_then(|v| v.parse().ok()),
     }
     .filter(|f: &f32| *f > 0.0)
     .unwrap_or(DEFAULT_FPS)

@@ -23,10 +23,7 @@ impl Ini {
                 continue;
             }
             if let Some((key, value)) = line.split_once('=') {
-                sections
-                    .entry(current.clone())
-                    .or_default()
-                    .insert(key.trim().to_string(), value.trim().to_string());
+                sections.entry(current.clone()).or_default().insert(key.trim().to_string(), value.trim().to_string());
             }
         }
         Self { sections }

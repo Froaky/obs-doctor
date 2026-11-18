@@ -1,16 +1,23 @@
 //! What the machine has: processor, memory, graphics cards, system.
 
+pub mod tiers;
+
 use sysinfo::System;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+use crate::facts::Facts;
+use crate::model::{Advice, Area, Level, Review, Row, Section, Tone};
+use crate::report::text;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GpuVendor {
     Nvidia,
     Amd,
     Intel,
+    #[default]
     Other,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Gpu {
     pub name: String,
     pub vendor: GpuVendor,
@@ -25,9 +32,7 @@ impl Gpu {
         match self.vendor {
             GpuVendor::Intel => !name.contains("arc"),
             GpuVendor::Amd => {
-                name.ends_with("radeon graphics")
-                    || name.contains("radeon(tm) graphics")
-                    || name.contains("vega")
+                name.ends_with("radeon graphics") || name.contains("radeon(tm) graphics") || name.contains("vega")
             }
             _ => false,
         }
@@ -43,7 +48,7 @@ impl Gpu {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Hardware {
     pub cpu_name: String,
     pub physical_cores: usize,
@@ -83,6 +88,10 @@ impl Hardware {
 
 pub const GIB: f64 = 1024.0 * 1024.0 * 1024.0;
 
+pub const RAM_COMFORTABLE_GB: f64 = 13.0; // a "16 GB" PC reports a bit less
+pub const RAM_MINIMUM_GB: f64 = 5.5; // an "8 GB" PC with integrated graphics
+const RAM_ALMOST_FULL_PCT: u32 = 85;
+
 pub fn read(sys: &System) -> Hardware {
     let cpu_name = sys
         .cpus()
@@ -102,11 +111,84 @@ pub fn read(sys: &System) -> Hardware {
     }
 }
 
+/// The "Tu PC" block of the report.
+pub fn sections(facts: &Facts) -> Vec<Section> {
+    let hw = &facts.hw;
+    if hw.cpu_name.is_empty() && hw.ram_total == 0 {
+        return Vec::new();
+    }
+    let mut section = Section::new("pc", "Tu PC");
+    section.push(Row::new("Procesador", format!("{} ({} núcleos)", hw.cpu_name, hw.physical_cores)));
+
+    let used = hw.ram_used_pct();
+    let memory_tone = if used >= RAM_ALMOST_FULL_PCT {
+        Tone::Bad
+    } else if used >= 70 {
+        Tone::Warn
+    } else {
+        Tone::Good
+    };
+    section.push(
+        Row::new(
+            "Memoria",
+            format!("{} GB en total, usando {} GB ({} %)", text::gb(hw.ram_total), text::gb(hw.ram_used), used),
+        )
+        .tone(memory_tone)
+        .meter(used as f32 / 100.0),
+    );
+
+    if hw.gpus.is_empty() {
+        section.push(Row::new("Placa de video", "No encontré ninguna"));
+    }
+    for gpu in &hw.gpus {
+        let kind = if gpu.is_integrated() {
+            "integrada".to_string()
+        } else {
+            format!("dedicada, {} GB", text::gb(gpu.vram_bytes))
+        };
+        section.push(Row::new("Placa de video", format!("{} ({kind})", gpu.name)));
+    }
+    section.push(Row::new("Sistema", hw.os.clone()));
+    vec![section]
+}
+
+pub fn advise(facts: &Facts, review: &mut Review) {
+    let hw = &facts.hw;
+    if hw.ram_total == 0 {
+        return;
+    }
+    let used = hw.ram_used_pct();
+    if used >= RAM_ALMOST_FULL_PCT {
+        review.add(Advice {
+            id: "pc.memory.almost-full",
+            level: Level::Important,
+            area: Area::Pc,
+            title: "Libera memoria antes de salir en directo".to_string(),
+            why: format!(
+                "Tu memoria está al {used} %. Cuando se llena, Windows empieza a usar el disco como si fuera memoria y todo se vuelve lento: el juego, OBS y el directo."
+            ),
+            steps: vec![
+                "Cierra los programas de la lista de programas abiertos, empezando por los que más memoria ocupan.".to_string(),
+            ],
+        });
+    } else if hw.ram_total_gb() < RAM_MINIMUM_GB {
+        review.add(Advice {
+            id: "pc.memory.small",
+            level: Level::Tip,
+            area: Area::Pc,
+            title: "Tu PC tiene poca memoria: cuídala".to_string(),
+            why: "Con esta cantidad de memoria, juego + OBS + navegador entran justos. Cuanto menos tengas abierto, mejor va a salir el directo."
+                .to_string(),
+            steps: vec!["Antes de transmitir, cierra todo lo que no uses en el directo.".to_string()],
+        });
+    } else {
+        review.ok(format!("Tienes memoria libre de sobra (usas el {used} %)."));
+    }
+}
+
 #[cfg(windows)]
 fn gpus() -> Vec<Gpu> {
-    use windows::Win32::Graphics::Dxgi::{
-        CreateDXGIFactory1, IDXGIFactory1, DXGI_ADAPTER_FLAG_SOFTWARE,
-    };
+    use windows::Win32::Graphics::Dxgi::{CreateDXGIFactory1, DXGI_ADAPTER_FLAG_SOFTWARE, IDXGIFactory1};
 
     let mut found: Vec<Gpu> = Vec::new();
     // SAFETY: plain DXGI enumeration; every call is checked and the COM
@@ -124,11 +206,7 @@ fn gpus() -> Vec<Gpu> {
             if desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE.0 as u32 != 0 {
                 continue; // Microsoft Basic Render Driver
             }
-            let len = desc
-                .Description
-                .iter()
-                .position(|&c| c == 0)
-                .unwrap_or(desc.Description.len());
+            let len = desc.Description.iter().position(|&c| c == 0).unwrap_or(desc.Description.len());
             let name = String::from_utf16_lossy(&desc.Description[..len]).trim().to_string();
             if found.iter().any(|g| g.name == name) {
                 continue;
@@ -158,6 +236,7 @@ fn vendor_from_id(id: u32) -> GpuVendor {
     }
 }
 
+/// Builders for tests in any module that needs a PC to reason about.
 #[cfg(test)]
 pub mod test_support {
     use super::*;
@@ -211,5 +290,31 @@ mod tests {
         assert!(gpu("NVIDIA GeForce MX150", GpuVendor::Nvidia, 2).nvenc_unlikely());
         assert!(gpu("NVIDIA GeForce MX 250", GpuVendor::Nvidia, 2).nvenc_unlikely());
         assert!(!gpu("NVIDIA GeForce GTX 1050 Ti", GpuVendor::Nvidia, 4).nvenc_unlikely());
+    }
+
+    #[test]
+    fn memory_almost_full_is_important() {
+        let mut hw = pc(6, 16, vec![]);
+        hw.ram_used = hw.ram_total / 100 * 92;
+        let facts = Facts { hw, ..Facts::default() };
+        let mut review = Review::default();
+        advise(&facts, &mut review);
+        assert_eq!(review.get("pc.memory.almost-full").map(|a| a.level), Some(Level::Important));
+    }
+
+    #[test]
+    fn the_pc_section_lists_processor_memory_and_cards() {
+        let facts =
+            Facts { hw: pc(6, 16, vec![gpu("NVIDIA GeForce GTX 1650", GpuVendor::Nvidia, 4)]), ..Facts::default() };
+        let sections = sections(&facts);
+        assert_eq!(sections.len(), 1);
+        let labels: Vec<&str> = sections[0].rows.iter().map(|r| r.label.as_str()).collect();
+        assert_eq!(labels, vec!["Procesador", "Memoria", "Placa de video", "Sistema"]);
+        assert_eq!(sections[0].rows[1].meter, Some(0.5));
+    }
+
+    #[test]
+    fn an_unknown_pc_shows_no_section() {
+        assert!(sections(&Facts::default()).is_empty());
     }
 }

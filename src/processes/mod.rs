@@ -1,8 +1,16 @@
 //! Programs running in the background and how much they are using.
 
 use std::collections::HashMap;
+use std::time::Duration;
 
 use sysinfo::System;
+
+use crate::facts::Facts;
+use crate::model::{ProgramCard, ProgramKind, Review};
+use crate::report::text;
+
+/// How long we watch the machine before measuring processor use per program.
+const SAMPLE_TIME: Duration = Duration::from_millis(1500);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Category {
@@ -45,9 +53,7 @@ impl Category {
             Category::Heavy => {
                 "Es un programa pesado. Si no lo necesitas para el directo, ciérralo y recuperas memoria y procesador."
             }
-            Category::Music => {
-                "No es un problema, pero tenlo en cuenta: si no vas a poner música, puedes cerrarlo."
-            }
+            Category::Music => "No es un problema, pero tenlo en cuenta: si no vas a poner música, puedes cerrarlo.",
         }
     }
 
@@ -201,7 +207,10 @@ pub struct Apps {
     pub obs_running: bool,
 }
 
-pub fn read(sys: &System) -> Apps {
+/// Watches the machine for a moment and reports what is running.
+pub fn read(sys: &mut System) -> Apps {
+    std::thread::sleep(SAMPLE_TIME);
+    sys.refresh_all();
     let cores = sys.cpus().len().max(1) as f32;
     let samples = sys.processes().values().map(|p| Sample {
         exe: p.name().to_string_lossy().into_owned(),
@@ -210,6 +219,37 @@ pub fn read(sys: &System) -> Apps {
     });
     classify(samples)
 }
+
+/// The programs as the report shows them.
+pub fn cards(facts: &Facts) -> Vec<ProgramCard> {
+    let apps = &facts.apps;
+    let known = apps.known.iter().map(|app| ProgramCard {
+        name: app.name.clone(),
+        kind: ProgramKind::Review,
+        usage: usage(app),
+        tip: app.category.map(Category::tip).unwrap_or_default().to_string(),
+    });
+    let unknown = apps.unknown.iter().map(|app| ProgramCard {
+        name: app.name.clone(),
+        kind: ProgramKind::Unknown,
+        usage: usage(app),
+        tip: String::new(),
+    });
+    known.chain(unknown).collect()
+}
+
+fn usage(app: &App) -> String {
+    let mut parts = vec![format!("{} de memoria", text::mem(app.mem_bytes))];
+    if app.cpu_pct >= 1.0 {
+        parts.push(format!("{} % del procesador", app.cpu_pct.round()));
+    }
+    if app.process_count > 1 {
+        parts.push(format!("{} procesos", app.process_count));
+    }
+    parts.join(", ")
+}
+
+pub fn advise(_facts: &Facts, _review: &mut Review) {}
 
 pub struct Sample {
     pub exe: String,
@@ -236,13 +276,8 @@ pub fn classify(samples: impl Iterator<Item = Sample>) -> Apps {
             Some((_, friendly, cat)) => (friendly.to_string(), friendly.to_string(), Some(*cat)),
             None => (key.clone(), s.exe.clone(), None),
         };
-        let app = groups.entry(group_key).or_insert(App {
-            name,
-            category,
-            process_count: 0,
-            mem_bytes: 0,
-            cpu_pct: 0.0,
-        });
+        let app =
+            groups.entry(group_key).or_insert(App { name, category, process_count: 0, mem_bytes: 0, cpu_pct: 0.0 });
         app.process_count += 1;
         app.mem_bytes += s.mem_bytes;
         app.cpu_pct += s.cpu_pct;
@@ -253,10 +288,7 @@ pub fn classify(samples: impl Iterator<Item = Sample>) -> Apps {
     for app in groups.into_values() {
         match app.category {
             Some(cat) => {
-                if cat.always_report()
-                    || app.mem_bytes >= KNOWN_MIN_MEM
-                    || app.cpu_pct >= KNOWN_MIN_CPU
-                {
+                if cat.always_report() || app.mem_bytes >= KNOWN_MIN_MEM || app.cpu_pct >= KNOWN_MIN_CPU {
                     known.push(app);
                 }
             }
@@ -267,8 +299,8 @@ pub fn classify(samples: impl Iterator<Item = Sample>) -> Apps {
             }
         }
     }
-    known.sort_by(|a, b| b.mem_bytes.cmp(&a.mem_bytes));
-    unknown.sort_by(|a, b| b.mem_bytes.cmp(&a.mem_bytes));
+    known.sort_by_key(|a| std::cmp::Reverse(a.mem_bytes));
+    unknown.sort_by_key(|a| std::cmp::Reverse(a.mem_bytes));
     unknown.truncate(MAX_UNKNOWN);
 
     Apps { known, unknown, obs_running }

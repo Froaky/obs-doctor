@@ -1,56 +1,122 @@
-//! OBS Doctor: revisa tu PC y tu configuración de OBS y te dice, en simple,
-//! qué cambiar para transmitir mejor. Solo lee: no modifica ni cierra nada.
+//! OBS Doctor: revisa tu PC, tu internet y tu configuración de OBS y te dice,
+//! en simple, qué cambiar para transmitir mejor.
+//!
+//! Solo lee: no modifica OBS ni Windows, y no cierra ningún programa.
+//!
+//! How the code is laid out: each area gathers facts into its own type
+//! (`hardware`, `processes`, `obs::config`, `obs::logs`, `obs::scenes`,
+//! `system`, `net`), [`facts::Facts`] holds them all, the rules of each area
+//! turn facts into [`model::Advice`], and `report` draws the result.
 
-mod advice;
+mod cli;
+mod diagnosis;
+mod facts;
 mod hardware;
 mod ini;
+mod model;
+mod net;
 mod obs;
+mod platforms;
 mod processes;
 mod report;
+mod suggest;
+mod system;
 
-use std::path::PathBuf;
-use std::time::Duration;
+use std::process::ExitCode;
 
 use sysinfo::System;
 
-/// How long we watch the machine before measuring CPU usage per program.
-const SAMPLE_TIME: Duration = Duration::from_millis(1500);
+use cli::{Command, Options};
+use facts::Facts;
+use report::console;
 
-fn main() {
-    report::enable_colors();
-    report::banner();
+fn main() -> ExitCode {
+    console::enable_colors();
 
-    let obs_dir_override = parse_obs_dir_arg();
+    let options = match cli::parse(std::env::args().skip(1)) {
+        Ok(Command::Run(options)) => options,
+        Ok(Command::Help) => {
+            print!("{}", cli::HELP);
+            return ExitCode::SUCCESS;
+        }
+        Ok(Command::Version) => {
+            println!("obs-doctor {}", env!("CARGO_PKG_VERSION"));
+            return ExitCode::SUCCESS;
+        }
+        Err(message) => {
+            console::problem(&message);
+            return ExitCode::from(2);
+        }
+    };
 
+    console::banner();
+    let Some(facts) = gather(&options) else {
+        console::pause_if_double_clicked();
+        return ExitCode::FAILURE;
+    };
+    let data = report::build(&facts);
+    show(&data, &options);
+    console::pause_if_double_clicked();
+    ExitCode::SUCCESS
+}
+
+/// Looks at everything, one area at a time, telling the streamer what is going on.
+fn gather(options: &Options) -> Option<Facts> {
+    console::step("Mirando tu PC y lo que tienes abierto...");
     let mut sys = match System::new_all() {
         Ok(sys) => sys,
         Err(err) => {
-            eprintln!("  No pude leer la información de esta PC: {err}");
-            report::pause_if_double_clicked();
-            std::process::exit(1);
+            console::problem(&format!("No pude leer la información de esta PC: {err}"));
+            return None;
         }
     };
-    std::thread::sleep(SAMPLE_TIME);
-    sys.refresh_all();
-
     let hw = hardware::read(&sys);
-    let apps = processes::read(&sys);
-    let obs_status = obs::read(obs_dir_override);
+    let apps = processes::read(&mut sys);
 
-    let suggested = advice::suggest(&hw);
-    let review = advice::review(&hw, &obs_status, &suggested);
+    console::step("Leyendo tu OBS...");
+    let paths = obs::locate(options.obs_dir.clone());
+    let obs_status = obs::config::read(&paths);
+    let logs = obs::logs::read(&paths);
+    let scenes = obs::scenes::read(&paths);
 
-    report::print(&hw, &obs_status, &suggested, &review, &apps);
-    report::pause_if_double_clicked();
+    console::step("Revisando Windows...");
+    let system_facts = system::read();
+
+    let net_facts = if options.skip_network {
+        net::skipped()
+    } else {
+        console::step("Midiendo tu internet...");
+        net::read(&mut |line| console::detail(line))
+    };
+
+    let mut facts = Facts {
+        hw,
+        apps,
+        obs: obs_status,
+        logs,
+        scenes,
+        system: system_facts,
+        net: net_facts,
+        suggested: suggest::Suggested::default(),
+    };
+    facts.suggested = suggest::suggest(&facts);
+    Some(facts)
 }
 
-/// Supports `--obs-dir <carpeta>` for portable OBS installs.
-fn parse_obs_dir_arg() -> Option<PathBuf> {
-    let mut args = std::env::args().skip(1);
-    while let Some(arg) = args.next() {
-        if arg == "--obs-dir" {
-            return args.next().map(PathBuf::from);
+fn show(data: &model::ReportData, options: &Options) {
+    if options.console_only {
+        console::print_full(data);
+        return;
+    }
+    let path = options.output.clone().unwrap_or_else(report::default_path);
+    match report::write_html(data, &path) {
+        Ok(()) => {
+            let opened = !options.no_open && report::open_in_browser(&path);
+            console::print_summary(data, &path, opened);
+        }
+        Err(err) => {
+            console::problem(&format!("No pude guardar el reporte en {} ({err}). Te lo muestro aquí:", path.display()));
+            console::print_full(data);
         }
     }
-    None
 }

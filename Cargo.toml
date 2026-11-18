@@ -1,7 +1,9 @@
 [package]
 name = "obs-doctor"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
+description = "Revisa tu PC, tu internet y tu OBS y te dice, en simple, qué cambiar para transmitir mejor."
+license = "MIT"
 
 [dependencies]
 colored = "3.1.1"
@@ -9,4 +11,26 @@ serde_json = "1.0.154"
 sysinfo = "0.40.4"
 
 [target."cfg(windows)".dependencies]
-windows = { version = "0.62.2", features = ["Win32_Graphics_Dxgi", "Win32_Graphics_Dxgi_Common", "Win32_System_Console"] }
+windows = { version = "0.62.2", features = [
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_NetworkManagement_WiFi",
+    "Win32_Networking_WinSock",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Console",
+    "Win32_System_Power",
+    "Win32_System_Registry",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
