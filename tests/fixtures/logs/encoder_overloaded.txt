@@ -1,0 +1,32 @@
+17:00:00.000: Running as administrator: false
+17:00:00.500: OBS 33.0.1 (64-bit, windows)
+17:00:01.000: Available Encoders:
+17:00:01.000:   Video Encoders:
+17:00:01.000: 	- obs_x264 (x264)
+17:00:01.000:   Audio Encoders:
+17:00:01.000: 	- ffmpeg_aac (FFmpeg AAC)
+17:59:50.000: [x264 encoder: 'simple_video_stream'] settings:
+17:59:50.000: 	rate_control: CBR
+17:59:50.000: 	bitrate:      6000
+17:59:50.000: 	buffer size:  6000
+17:59:50.000: 	crf:          23
+17:59:50.000: 	fps_num:      60
+17:59:50.000: 	fps_den:      1
+17:59:50.000: 	width:        1920
+17:59:50.000: 	height:       1080
+17:59:50.000: 	keyint:       120
+17:59:50.000:
+17:59:51.000: ==== Recording Start ===============================================
+17:59:59.000: [rtmp stream: 'simple_stream'] Interface: Adaptador de red de ejemplo (ethernet, 1000↓/1000↑ mbps)
+18:00:00.000: ==== Streaming Start ===============================================
+19:00:00.000: [rtmp stream: 'simple_stream'] User stopped the stream
+19:00:00.100: Output 'simple_stream': stopping
+19:00:00.100: Output 'simple_stream': Total frames output: 216000
+19:00:00.100: Output 'simple_stream': Total drawn frames: 216000
+19:00:01.000: ==== Streaming Stop ================================================
+19:00:10.000: Output 'simple_file_output': stopping
+19:00:10.000: Output 'simple_file_output': Total frames output: 216600
+19:00:10.000: Output 'simple_file_output': Total drawn frames: 216600
+19:00:10.100: Video stopped, number of skipped frames due to encoding lag: 26858/216600 (12.4%)
+19:00:11.000: ==== Recording Stop ================================================
+19:05:00.000: ==== Shutting down ==================================================

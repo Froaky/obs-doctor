@@ -1,0 +1,32 @@
+22:00:00.000: Running as administrator: true
+22:00:00.500: OBS 33.0.1 (64-bit, windows)
+22:00:01.000: Available Encoders:
+22:00:01.000:   Video Encoders:
+22:00:01.000: 	- h264_texture_amf (AMD HW H.264 (AVC))
+22:00:01.000: 	- obs_x264 (x264)
+22:00:01.000:   Audio Encoders:
+22:00:01.000: 	- ffmpeg_aac (FFmpeg AAC)
+22:29:58.000: [texture-amf-h264: 'simple_video_stream'] settings:
+22:29:58.000: 	rate_control: CBR
+22:29:58.000: 	bitrate:      5000
+22:29:58.000: 	width:        1920
+22:29:58.000: 	height:       1080
+22:30:00.000: ==== Streaming Start ===============================================
+23:00:00.000: Output 'simple_stream': stopping
+23:00:00.000: Output 'simple_stream': Total frames output: 52000 (53640 attempted)
+23:00:00.000: Output 'simple_stream': Total drawn frames: 53640
+23:00:00.000: Output 'simple_stream': Number of dropped frames due to insufficient bandwidth/connection stalls: 1663 (3.1%)
+23:00:01.000: ==== Streaming Stop ================================================
+00:09:58.000: [texture-amf-h264: 'simple_video_stream'] settings:
+00:09:58.000: 	rate_control: CBR
+00:09:58.000: 	bitrate:      3500
+00:09:58.000: 	width:        1280
+00:09:58.000: 	height:       720
+00:10:00.000: ==== Streaming Start ===============================================
+00:29:00.000: [rtmp stream: 'simple_stream'] Disconnected from rtmp://servidor.ejemplo/app
+00:29:00.100: Output 'simple_stream': Reconnecting in 2.00 seconds..
+00:29:30.000: Output 'simple_stream': stopping
+00:29:30.000: Output 'simple_stream': Total frames output: 34200
+00:29:30.000: Output 'simple_stream': Total drawn frames: 34200
+00:30:00.000: ==== Streaming Stop ================================================
+00:31:00.000: ==== Shutting down ==================================================

@@ -85,7 +85,7 @@ fn gather(options: &Options) -> Option<Facts> {
     let net_facts = if options.skip_network {
         net::skipped()
     } else {
-        console::step("Midiendo tu internet...");
+        console::step("Revisando tu internet...");
         net::read(&mut |line| console::detail(line))
     };
 

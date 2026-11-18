@@ -1,0 +1,6 @@
+19:50:00.000: Running as administrator: false
+19:50:00.500: OBS 33.0.1 (64-bit, windows)
+19:59:59.000: [rtmp stream: 'simple_stream'] Interface: Adaptador de red de ejemplo (ethernet, 1000↓/1000↑ mbps)
+20:00:00.000: ==== Streaming Start ===============================================
+20:15:00.000: Switched to scene 'Escena 2'
+20:30:00.000: Switched to scene 'Escena'

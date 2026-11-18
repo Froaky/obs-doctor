@@ -6,7 +6,9 @@ use sysinfo::System;
 
 use crate::facts::Facts;
 use crate::model::{Advice, Area, Level, Review, Row, Section, Tone};
+use crate::obs::config::EncoderKind;
 use crate::report::text;
+use tiers::{CpuInfo, VideoEncoder};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GpuVendor {
@@ -30,21 +32,65 @@ impl Gpu {
     pub fn is_integrated(&self) -> bool {
         let name = self.name.to_lowercase();
         match self.vendor {
-            GpuVendor::Intel => !name.contains("arc"),
+            // Dedicated Arc cards carry a model like "A750" or "B580"; the Arc
+            // inside Core Ultra chips is "Arc(TM) Graphics" or "Arc(TM) 140V".
+            // Words are ASCII-only after the split, so byte slicing is safe.
+            GpuVendor::Intel => !name.split(|c: char| !c.is_ascii_alphanumeric()).any(|w| {
+                w.len() >= 4
+                    && (w.starts_with('a') || w.starts_with('b'))
+                    && w[1..4].chars().all(|c| c.is_ascii_digit())
+                    && matches!(&w[4..], "" | "m")
+            }),
+            // Radeon chips inside Ryzen processors: "Radeon(TM) Graphics",
+            // "Radeon Vega 8 Graphics", "Radeon 780M". Dedicated ones say "RX"
+            // or "Pro", or are a "Series".
             GpuVendor::Amd => {
-                name.ends_with("radeon graphics") || name.contains("radeon(tm) graphics") || name.contains("vega")
+                let dedicated = name.contains("rx ") || name.contains(" pro") || name.contains("series");
+                let three_digit_m = name.split_whitespace().any(|w| {
+                    w.len() == 4
+                        && w.ends_with('m')
+                        && w.get(..3).is_some_and(|d| d.chars().all(|c| c.is_ascii_digit()))
+                });
+                !dedicated && (name.contains("graphics") || name.contains("vega") || three_digit_m)
             }
             _ => false,
         }
     }
 
-    /// Entry-level NVIDIA cards that ship without the hardware video encoder.
+    /// Entry-level NVIDIA cards that ship without the hardware video encoder,
+    /// or whose encoder current drivers no longer support.
+    // Kept for other areas; suggest goes through `encoder()` for every brand.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn nvenc_unlikely(&self) -> bool {
-        let name = self.name.to_lowercase();
-        self.vendor == GpuVendor::Nvidia
-            && ["gt 1030", "gt 710", "gt 720", "gt 730", "gt 610", "gt 620", "gt 630", " mx"]
-                .iter()
-                .any(|m| name.contains(m))
+        self.vendor == GpuVendor::Nvidia && !self.encoder().likely_usable()
+    }
+
+    /// What the card's video encoder is like, judged from its name.
+    pub fn encoder(&self) -> tiers::VideoEncoder {
+        tiers::classify_gpu(self)
+    }
+
+    /// The encoder family OBS would use on this card.
+    pub fn encoder_kind(&self) -> Option<EncoderKind> {
+        match self.vendor {
+            GpuVendor::Nvidia => Some(EncoderKind::Nvidia),
+            GpuVendor::Amd => Some(EncoderKind::Amd),
+            GpuVendor::Intel => Some(EncoderKind::Intel),
+            GpuVendor::Other => None,
+        }
+    }
+
+    /// Higher is the card OBS should lean on: dedicated before integrated.
+    fn rank(&self) -> (u8, u64) {
+        let rank = match (self.is_integrated(), self.vendor) {
+            (false, GpuVendor::Nvidia) => 5,
+            (false, GpuVendor::Amd) => 4,
+            (false, GpuVendor::Intel) => 3,
+            (true, GpuVendor::Intel) => 2,
+            (true, _) => 1,
+            (false, GpuVendor::Other) => 0,
+        };
+        (rank, self.vram_bytes)
     }
 }
 
@@ -72,17 +118,18 @@ impl Hardware {
 
     /// The card OBS should lean on: a dedicated one if there is any.
     pub fn best_gpu(&self) -> Option<&Gpu> {
-        self.gpus.iter().max_by_key(|g| {
-            let rank = match (g.is_integrated(), g.vendor) {
-                (false, GpuVendor::Nvidia) => 5,
-                (false, GpuVendor::Amd) => 4,
-                (false, GpuVendor::Intel) => 3,
-                (true, GpuVendor::Intel) => 2,
-                (true, _) => 1,
-                (false, GpuVendor::Other) => 0,
-            };
-            (rank, g.vram_bytes)
-        })
+        self.gpus.iter().max_by_key(|g| g.rank())
+    }
+
+    /// Every card, best first.
+    pub fn gpus_ranked(&self) -> Vec<&Gpu> {
+        let mut gpus: Vec<&Gpu> = self.gpus.iter().collect();
+        gpus.sort_by_key(|g| std::cmp::Reverse(g.rank()));
+        gpus
+    }
+
+    pub fn cpu(&self) -> CpuInfo {
+        tiers::classify_cpu(&self.cpu_name)
     }
 }
 
@@ -118,7 +165,11 @@ pub fn sections(facts: &Facts) -> Vec<Section> {
         return Vec::new();
     }
     let mut section = Section::new("pc", "Tu PC");
-    section.push(Row::new("Procesador", format!("{} ({} núcleos)", hw.cpu_name, hw.physical_cores)));
+    let mut cpu_row = Row::new("Procesador", format!("{} ({} núcleos)", hw.cpu_name, hw.physical_cores));
+    if let Some(note) = cpu_note(&hw.cpu()) {
+        cpu_row = cpu_row.note(note);
+    }
+    section.push(cpu_row);
 
     let used = hw.ram_used_pct();
     let memory_tone = if used >= RAM_ALMOST_FULL_PCT {
@@ -146,10 +197,46 @@ pub fn sections(facts: &Facts) -> Vec<Section> {
         } else {
             format!("dedicada, {} GB", text::gb(gpu.vram_bytes))
         };
-        section.push(Row::new("Placa de video", format!("{} ({kind})", gpu.name)));
+        let mut row = Row::new("Placa de video", format!("{} ({kind})", gpu.name));
+        let listed = gpu.encoder_kind().and_then(|kind| facts.logs.can_encode_with(kind));
+        if let Some(note) = gpu_note(gpu, listed).filter(|_| gpu.vendor != GpuVendor::Other) {
+            row = row.note(note);
+        }
+        section.push(row);
     }
     section.push(Row::new("Sistema", hw.os.clone()));
     vec![section]
+}
+
+fn cpu_note(cpu: &CpuInfo) -> Option<String> {
+    let class = cpu.class_label()?;
+    let mut note = format!("Procesador {class}");
+    if let (tiers::CpuFamily::IntelCore, Some(generation)) = (cpu.family, cpu.generation) {
+        note.push_str(&format!(", {generation}.ª generación"));
+    }
+    note.push('.');
+    if cpu.is_entry_level() {
+        note.push_str(" Es de gama de entrada: queda justo para jugar y transmitir a la vez.");
+    }
+    Some(note)
+}
+
+/// Whether the card can prepare the stream's video. `listed` is what the OBS
+/// logs say about this card's encoder family, which beats the name.
+fn gpu_note(gpu: &Gpu, listed: Option<bool>) -> Option<&'static str> {
+    match (listed, gpu.encoder()) {
+        (Some(false), _) => Some("OBS no la ofreció para preparar el video del directo la última vez que se abrió."),
+        (Some(true), VideoEncoder::Modern) | (None, VideoEncoder::Modern) => {
+            Some("Puede preparar el video del directo, con un codificador moderno.")
+        }
+        (Some(true), VideoEncoder::Older) | (None, VideoEncoder::Older) => {
+            Some("Puede preparar el video del directo, con un codificador de una generación anterior.")
+        }
+        (Some(true), _) => Some("Puede preparar el video del directo: OBS la ofrece."),
+        (None, VideoEncoder::Missing) => Some("No puede preparar el video del directo."),
+        (None, VideoEncoder::TooOld) => Some("Su parte para preparar el video es muy antigua para el OBS actual."),
+        (None, VideoEncoder::Unknown) => None,
+    }
 }
 
 pub fn advise(facts: &Facts, review: &mut Review) {
@@ -183,6 +270,32 @@ pub fn advise(facts: &Facts, review: &mut Review) {
         });
     } else {
         review.ok(format!("Tienes memoria libre de sobra (usas el {used} %)."));
+    }
+    advise_capacity(facts, review);
+}
+
+/// Says honestly when the PC only manages the smallest picture, and confirms
+/// when a card takes the video work off the processor.
+fn advise_capacity(facts: &Facts, review: &mut Review) {
+    let suggested = &facts.suggested;
+    // A small memory already has its own tip with the same steps.
+    if suggested.low_end && facts.hw.ram_total_gb() >= RAM_MINIMUM_GB {
+        review.add(Advice {
+            id: "pc.low-end",
+            level: Level::Tip,
+            area: Area::Pc,
+            title: format!("Empieza con {}p a {} cuadros y un juego liviano", suggested.height, suggested.fps),
+            why: "Esta PC está justa para jugar y transmitir a la vez. Con una imagen chica el directo sale fluido; con más, el juego y el video se pueden trabar."
+                .to_string(),
+            steps: vec![
+                "Antes de transmitir, cierra el navegador y todo lo que no uses en el directo.".to_string(),
+                "Haz un directo de prueba y mira si el video sale fluido.".to_string(),
+                "Si sale bien, prueba subir a 720p a 30 cuadros y vuelve a mirar.".to_string(),
+            ],
+        });
+    }
+    if let (true, Some(name)) = (suggested.encoder.is_hardware(), suggested.gpu_name.as_deref()) {
+        review.ok(format!("Tu {name} puede preparar el video del directo sin cargar al procesador."));
     }
 }
 

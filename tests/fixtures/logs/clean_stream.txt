@@ -1,0 +1,63 @@
+20:58:10.101: CPU Name: Procesador de ejemplo
+20:58:10.101: Physical Memory: 16384MB Total, 9000MB Free
+20:58:10.101: Windows Version: 10.0 Build 22631 (release: 23H2; revision: 4460; 64-bit)
+20:58:10.101: Running as administrator: false
+20:58:10.102: Windows 10/11 Gaming Features:
+20:58:10.102: 	Game Bar: On
+20:58:10.102: 	Game DVR Allowed: Yes
+20:58:10.102: 	Game DVR: On
+20:58:10.102: 	Game DVR Background Recording: Off
+20:58:10.102: 	Game Mode: Probably On (no reg key set)
+20:58:10.200: Crash or unclean shutdown detected
+20:58:10.300: OBS 33.0.1 (64-bit, windows)
+20:58:10.300: ---------------------------------
+20:58:10.400: Initializing D3D11...
+20:58:10.400: Available Video Adapters:
+20:58:10.401: 	Adapter 0: NVIDIA GeForce GTX 1660 SUPER
+20:58:10.401: 	  Dedicated VRAM: 6442450944 (6.0 GiB)
+20:58:10.401: 	  Shared VRAM:    8589934592 (8.0 GiB)
+20:58:10.401: 	  PCI ID:         10de:21c4
+20:58:10.401: 	  HAGS Status:    Enabled (Default: No, Driver status: Supported)
+20:58:10.401: 	  Driver Version: 32.0.15.6094
+20:58:10.401: 	  output 0:
+20:58:10.401: 	    name=Monitor de ejemplo
+20:58:10.401: 	    pos={0, 0}
+20:58:10.401: 	    size={1920, 1080}
+20:58:10.401: 	    attached=true
+20:58:10.401: 	    refresh=144
+20:58:10.402: 	Adapter 1: Intel(R) UHD Graphics 630
+20:58:10.402: 	  Dedicated VRAM: 134217728 (0.1 GiB)
+20:58:10.402: 	  HAGS Status:    Disabled (Default: No, Driver status: Unsupported)
+20:58:10.402: 	  Driver Version: Unknown (0x80004005)
+20:58:10.402: 	  output 0:
+20:58:10.402: 	    size={2560, 1440}
+20:58:10.402: 	    refresh=144
+20:58:10.403: Loading up D3D11 on adapter NVIDIA GeForce GTX 1660 SUPER (0)
+20:58:10.500: ---------------------------------
+20:58:11.000: Available Encoders:
+20:58:11.000:   Video Encoders:
+20:58:11.000: 	- obs_nvenc_h264_tex (NVIDIA NVENC H.264)
+20:58:11.000: 	- obs_nvenc_hevc_tex (NVIDIA NVENC HEVC)
+20:58:11.000: 	- obs_x264 (x264)
+20:58:11.000:   Audio Encoders:
+20:58:11.000: 	- ffmpeg_aac (FFmpeg AAC)
+20:58:11.100: ==== Startup complete ===============================================
+20:59:58.000: [obs-nvenc: 'simple_video_stream'] settings:
+20:59:58.000: 	codec:        H264
+20:59:58.000: 	rate_control: CBR
+20:59:58.000: 	bitrate:      6000
+20:59:58.000: 	keyint:       120
+20:59:58.000: 	preset:       p5
+20:59:58.000: 	width:        1920
+20:59:58.000: 	height:       1080
+20:59:58.000:
+20:59:59.000: [rtmp stream: 'simple_stream'] Connecting to RTMP URL rtmp://servidor.ejemplo/app...
+20:59:59.100: [rtmp stream: 'simple_stream'] Interface: Adaptador de red de ejemplo (ethernet, 1000↓/1000↑ mbps)
+20:59:59.200: [rtmp stream: 'simple_stream'] Connection to rtmp://servidor.ejemplo/app (192.0.2.10) successful
+21:00:00.000: ==== Streaming Start ===============================================
+23:00:04.000: [rtmp stream: 'simple_stream'] User stopped the stream
+23:00:04.100: Output 'simple_stream': stopping
+23:00:04.100: Output 'simple_stream': Total frames output: 216150
+23:00:04.100: Output 'simple_stream': Total drawn frames: 216150
+23:00:05.000: ==== Streaming Stop ================================================
+23:01:00.000: ==== Shutting down ==================================================

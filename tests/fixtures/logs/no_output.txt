@@ -1,0 +1,14 @@
+10:00:00.000: Running as administrator: false
+10:00:00.001: Windows 10/11 Gaming Features:
+10:00:00.001: 	Game DVR: Off
+10:00:00.001: 	Game Mode: On
+10:00:00.500: OBS 33.0.1 (64-bit, windows)
+10:00:01.000: NVENC not supported
+10:00:01.100: Failed to initialize module 'obs-nvenc.dll'
+10:00:02.000: Available Encoders:
+10:00:02.000:   Video Encoders:
+10:00:02.000: 	- obs_x264 (x264)
+10:00:02.000:   Audio Encoders:
+10:00:02.000: 	- ffmpeg_aac (FFmpeg AAC)
+10:00:03.000: ==== Startup complete ===============================================
+10:20:00.000: ==== Shutting down ==================================================
