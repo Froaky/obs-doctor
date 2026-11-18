@@ -1,0 +1,1090 @@
+/* Report styles. html.rs inlines this file as it is, so it must stay
+   self-contained: no url(), no @import, nothing the browser would fetch. */
+
+:root {
+  color-scheme: light dark;
+  --paper: #eef0f6;
+  --surface: #fff;
+  --ink: #161a2e;
+  --soft: #4d546e;
+  --rule: #d3d8e6;
+  /* The slab is the dark panel at the top and bottom of the page. */
+  --slab: #161a2e;
+  --slab-ink: #f4f6fc;
+  --slab-soft: #b5bcd6;
+  --slab-rule: #353b5a;
+  --red: #c22130;
+  --amber: #8a5a00;
+  --blue: #2450c4;
+  --green: #1a7a45;
+  --lamp-red: #ff6b6b;
+  --lamp-amber: #f5b72e;
+  --lamp-green: #3ecf85;
+  --focus: #2450c4;
+  /* Bahnschrift ships with Windows 10 and 11 and has a real width axis. */
+  --display: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151826;
+    --surface: #1e2233;
+    --ink: #e8ebf5;
+    --soft: #a4abc4;
+    --rule: #323853;
+    --slab: #0c0f1d;
+    --slab-rule: #2a304a;
+    --red: #ff7a7a;
+    --amber: #f0b63a;
+    --blue: #8aa9ff;
+    --green: #55d490;
+    --focus: #8aa9ff;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1.0625rem/1.55 var(--body);
+  /* Program and source names come from the PC and can be one endless word. */
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Names from the PC may be written right to left: keep them from
+   reordering the Spanish text around them. */
+bdi,
+.val,
+.note,
+.tag,
+.prog-usage {
+  unicode-bidi: isolate;
+}
+
+.wrap {
+  max-width: 70rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.ic {
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+
+.skip {
+  position: absolute;
+  top: -6rem;
+  left: 1rem;
+  z-index: 5;
+  padding: 0.6rem 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.skip:focus {
+  top: 1rem;
+}
+
+.fine {
+  margin-top: 0.75rem;
+  color: var(--soft);
+  font-size: 0.9375rem;
+}
+
+/* ---------- Top panel: the verdict ---------- */
+
+.hero,
+.foot {
+  --focus: #a9bfff;
+  background: var(--slab);
+  color: var(--slab-ink);
+}
+
+.mast {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--slab-rule);
+  color: var(--slab-soft);
+}
+
+.brand {
+  color: var(--slab-ink);
+  font: 700 1.375rem/1 var(--display);
+  font-stretch: 87.5%;
+}
+
+.verdict {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: clamp(2rem, 6vw, 4.5rem);
+}
+
+.v-ready {
+  --lamp: var(--lamp-green);
+}
+
+.v-almost {
+  --lamp: var(--lamp-amber);
+}
+
+.v-needs {
+  --lamp: var(--lamp-red);
+}
+
+/* The studio lamp. Its colour repeats what the headline says in words. */
+.lamp {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(3.25rem, 9vw, 6.5rem);
+  aspect-ratio: 1;
+  margin: 0.55rem;
+  border-radius: 50%;
+  background: var(--lamp);
+  color: var(--slab);
+}
+
+.lamp::after {
+  content: "";
+  position: absolute;
+  inset: -0.55rem;
+  border: 2px solid var(--lamp);
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.lamp .ic {
+  width: 56%;
+  height: 56%;
+}
+
+.hero h1 {
+  max-width: 16em;
+  font-size: clamp(2.25rem, 1.15rem + 5.2vw, 5rem);
+  font-weight: 700;
+  font-stretch: 75%;
+  line-height: 0.98;
+}
+
+.tally {
+  margin-top: 1.1rem;
+  font: 600 clamp(1.2rem, 1rem + 1vw, 1.625rem) / 1.2 var(--display);
+  font-stretch: 87.5%;
+}
+
+.calm {
+  max-width: 36em;
+  margin-top: 0.5rem;
+  color: var(--slab-soft);
+}
+
+.toc {
+  border-top: 1px solid var(--slab-rule);
+}
+
+.toc ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.75rem;
+  padding-block: 0.55rem;
+}
+
+.toc a {
+  display: inline-block;
+  padding-block: 0.45rem;
+  font-family: var(--display);
+  font-stretch: 87.5%;
+  text-decoration: underline;
+  text-decoration-color: var(--slab-rule);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.toc a:hover {
+  text-decoration-color: currentColor;
+}
+
+.toc .n {
+  margin-left: 0.4em;
+  color: var(--slab-soft);
+}
+
+/* ---------- Bands: one per part of the report ---------- */
+
+.band {
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  border-top: 1px solid var(--rule);
+}
+
+.band:first-child {
+  border-top: 0;
+}
+
+.band-head h2 {
+  font-size: clamp(1.875rem, 1.5rem + 1.4vw, 2.5rem);
+  font-weight: 700;
+  font-stretch: 80%;
+}
+
+.lede {
+  max-width: 38em;
+  margin-top: 0.6rem;
+  color: var(--soft);
+}
+
+.band-body {
+  margin-top: 1.5rem;
+}
+
+/* ---------- Progress: how many changes are ticked ---------- */
+
+.progress {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  margin: 1rem calc(-1 * clamp(1rem, 4vw, 2.5rem)) 0;
+  padding: 0.55rem clamp(1rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.count {
+  font: 700 1.25rem/1.1 var(--display);
+  font-stretch: 87.5%;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+/* Level is told by shape as well as colour: filled square, filled circle, ring. */
+.lvl-important {
+  --lvl: var(--red);
+}
+
+.lvl-recommended {
+  --lvl: var(--amber);
+}
+
+.lvl-tip {
+  --lvl: var(--blue);
+}
+
+.chip {
+  display: grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding-inline: 0.25rem;
+  border: 2px solid var(--lvl);
+  background: var(--lvl);
+  color: var(--surface);
+  font: 700 0.9375rem/1 var(--display);
+  text-decoration: none;
+}
+
+.chip.lvl-recommended,
+.chip.lvl-tip {
+  border-radius: 99rem;
+}
+
+.chip.lvl-tip {
+  background: none;
+  color: var(--lvl);
+}
+
+.chip .ic {
+  display: none;
+}
+
+.chip.is-done {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--surface);
+}
+
+.chip.is-done .num {
+  display: none;
+}
+
+.chip.is-done .ic {
+  display: block;
+}
+
+/* ---------- Advice ---------- */
+
+.advice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "num meta"
+    "title title"
+    "body body"
+    "done done";
+  column-gap: 0.75rem;
+  padding: 1.1rem 1.1rem 1.2rem 1rem;
+  border-left: 0.4rem solid var(--lvl);
+  background: var(--surface);
+  /* Leave room for the sticky progress bar when a tile jumps here. */
+  scroll-margin-top: 5.5rem;
+}
+
+.advice + .advice {
+  margin-top: 0.75rem;
+}
+
+.advice.lvl-recommended {
+  border-left-style: dashed;
+}
+
+.advice.lvl-tip {
+  border-left-style: dotted;
+}
+
+.advice-num {
+  grid-area: num;
+  align-self: center;
+  font: 700 1.5rem/1 var(--display);
+}
+
+.advice-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.75rem;
+}
+
+.level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--lvl);
+  font-weight: 600;
+}
+
+/* Drawn with borders, not backgrounds, so the mark survives printing. */
+.level::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 0.35rem solid currentColor;
+}
+
+.lvl-recommended .level::before,
+.lvl-tip .level::before {
+  border-radius: 50%;
+}
+
+.lvl-tip .level::before {
+  border-width: 2px;
+}
+
+.tag {
+  padding: 0.05rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 99rem;
+  color: var(--soft);
+  font-size: 0.9375rem;
+}
+
+.advice-title {
+  grid-area: title;
+  margin-top: 0.55rem;
+  font-size: clamp(1.3125rem, 1.15rem + 0.6vw, 1.5rem);
+  font-weight: 600;
+  font-stretch: 87.5%;
+  line-height: 1.15;
+}
+
+/* The body folds away when the item is ticked: 1fr to 0fr can be animated. */
+.advice-body {
+  grid-area: body;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.advice-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.why {
+  max-width: 40em;
+  margin-top: 0.7rem;
+}
+
+.how {
+  margin-top: 0.9rem;
+  font-weight: 600;
+}
+
+.steps {
+  max-width: 40em;
+  counter-reset: step;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  padding-top: 0.35rem;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step) ".";
+  font: 700 1.0625rem/1.55 var(--display);
+}
+
+.done {
+  grid-area: done;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.75rem;
+  margin-top: 1rem;
+  padding: 0.25rem 1.1rem 0.25rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 99rem;
+  font: 600 1.125rem/1 var(--display);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.done:hover {
+  background: var(--paper);
+}
+
+.done input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: grid;
+  place-content: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin: 0;
+  border: 2px solid currentColor;
+  border-radius: 0.2rem;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.done input::before {
+  content: "";
+  width: 0.75rem;
+  height: 0.75rem;
+  background: currentColor;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%);
+  transform: scale(0);
+}
+
+.done input:checked::before {
+  transform: scale(1);
+}
+
+@supports selector(:has(a)) {
+  .done:has(input:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .done input:focus-visible {
+    outline: 0;
+  }
+}
+
+.advice.is-done {
+  border-left-style: solid;
+  border-left-color: var(--green);
+}
+
+.is-done .advice-body {
+  grid-template-rows: 0fr;
+  visibility: hidden;
+}
+
+.is-done .advice-num,
+.is-done .advice-title {
+  color: var(--soft);
+}
+
+.is-done .done {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--surface);
+}
+
+.nothing,
+.alldone {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  font: 600 1.375rem/1.25 var(--display);
+  font-stretch: 87.5%;
+}
+
+.nothing .ic {
+  position: relative;
+  top: 0.12em;
+  color: var(--green);
+}
+
+.alldone {
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 2px solid var(--green);
+}
+
+/* ---------- Programs, good news, facts, notes ---------- */
+
+.group + .group,
+.facts + .facts {
+  margin-top: 2.25rem;
+}
+
+.group h3,
+.facts h3 {
+  padding-bottom: 0.45rem;
+  border-bottom: 2px solid var(--ink);
+  font-size: 1.375rem;
+  font-weight: 600;
+  font-stretch: 87.5%;
+}
+
+.progs li,
+.good li,
+.notes li,
+.row {
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.prog-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 1.25rem;
+}
+
+.prog-name {
+  font-weight: 600;
+}
+
+.prog-usage {
+  color: var(--soft);
+  font-family: var(--display);
+  font-stretch: 87.5%;
+}
+
+.prog-tip {
+  max-width: 40em;
+  margin-top: 0.15rem;
+}
+
+.good li,
+.notes li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.good .ic {
+  margin-top: 0.3em;
+  color: var(--green);
+}
+
+.notes li::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: 0.5em;
+  border: 2px solid var(--soft);
+  border-radius: 50%;
+}
+
+.intro {
+  max-width: 40em;
+  margin-top: 0.7rem;
+  color: var(--soft);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.row dt {
+  color: var(--soft);
+}
+
+.val {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.1875rem;
+  font-stretch: 87.5%;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.val .ic {
+  margin-right: 0.4em;
+  vertical-align: -0.12em;
+}
+
+.tone-good {
+  --tone: var(--green);
+}
+
+.tone-warn {
+  --tone: var(--amber);
+}
+
+.tone-bad {
+  --tone: var(--red);
+}
+
+.row .val,
+.row .meter {
+  color: var(--tone, var(--ink));
+}
+
+.note {
+  display: block;
+  max-width: 40em;
+  margin-top: 0.2rem;
+  color: var(--soft);
+  font-size: 0.9375rem;
+}
+
+/* A level meter like the ones in the OBS mixer: 25 segments. */
+.meter {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: 0.6rem;
+  margin-top: 0.45rem;
+}
+
+.meter line {
+  fill: none;
+  stroke-width: 4;
+  stroke-dasharray: 3 1;
+}
+
+.meter-track {
+  stroke: var(--rule);
+}
+
+.meter-fill {
+  stroke: currentColor;
+}
+
+/* The suggested setup is the part people copy into OBS: make it a card to read from. */
+.ficha {
+  padding: 0.5rem 1.25rem 0.6rem;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+}
+
+.ficha .intro {
+  margin-block: 0.6rem 0.3rem;
+}
+
+.ficha .row:last-child {
+  border-bottom: 0;
+}
+
+.ficha .val {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* ---------- Bottom panel ---------- */
+
+.foot {
+  margin-top: clamp(1rem, 4vw, 3rem);
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+  color: var(--slab-soft);
+}
+
+.foot-brand {
+  margin-bottom: 1.25rem;
+}
+
+.promise {
+  max-width: 22em;
+  color: var(--slab-ink);
+  font: 700 clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem) / 1.1 var(--display);
+  font-stretch: 80%;
+}
+
+.foot-text p + p {
+  max-width: 40em;
+  margin-top: 0.9rem;
+}
+
+/* ---------- Wider screens ---------- */
+
+@media (min-width: 36rem) {
+  .row {
+    grid-template-columns: 12.5rem minmax(0, 1fr);
+    column-gap: 1.5rem;
+  }
+}
+
+@media (min-width: 40rem) {
+  .verdict {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .advice {
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "num meta done"
+      "num title done"
+      "num body body";
+    column-gap: 1rem;
+    padding: 1.25rem 1.5rem 1.4rem 1.25rem;
+  }
+
+  .advice-num {
+    align-self: start;
+    font-size: 2.25rem;
+  }
+
+  .done {
+    align-self: start;
+    margin-top: 0;
+  }
+}
+
+/* From here on, headings hang in a left column and everything else shares
+   one reading column, so the page keeps a single vertical axis. */
+@media (min-width: 62rem) {
+  .cols {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    column-gap: 3.5rem;
+  }
+
+  .mast {
+    justify-content: start;
+  }
+
+  .toc ul,
+  .band-body {
+    grid-column: 2;
+  }
+
+  .band-head {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+  }
+
+  .band-body {
+    margin-top: 0;
+  }
+
+  .foot-brand {
+    margin-bottom: 0;
+  }
+
+  /* In the advice band the progress block, not the heading, stays in view. */
+  .band-advice {
+    grid-template-rows: auto 1fr;
+  }
+
+  .band-advice .band-head {
+    position: static;
+    grid-area: 1 / 1;
+  }
+
+  .band-advice .progress {
+    grid-area: 2 / 1;
+    align-self: start;
+    display: block;
+    top: 1.5rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .band-advice .band-body {
+    grid-area: 1 / 2 / 3 / 3;
+  }
+
+  .count {
+    font-size: 1.75rem;
+  }
+
+  .chips {
+    margin-top: 0.75rem;
+  }
+
+  .advice {
+    scroll-margin-top: 1.5rem;
+  }
+}
+
+/* ---------- Motion: only for people who have not asked for less ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* The one staged moment of the page: the lamp comes on. */
+  .lamp {
+    animation: lamp-on 0.7s ease-out both;
+  }
+
+  .lamp::after {
+    animation: lamp-ring 0.9s ease-out 0.25s both;
+  }
+
+  .advice-body {
+    transition: grid-template-rows 0.28s ease, visibility 0s;
+  }
+
+  .is-done .advice-body {
+    transition: grid-template-rows 0.28s ease, visibility 0s 0.28s;
+  }
+
+  .done input::before {
+    transition: transform 0.12s ease-out;
+  }
+}
+
+@keyframes lamp-on {
+  from {
+    filter: brightness(0.4);
+  }
+}
+
+@keyframes lamp-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+/* ---------- Windows high contrast ---------- */
+
+@media (forced-colors: active) {
+  .lamp,
+  .chip,
+  .advice,
+  .done {
+    border: 2px solid CanvasText;
+  }
+
+  .done input::before {
+    background: CanvasText;
+  }
+
+  .meter-track {
+    stroke: GrayText;
+  }
+
+  .meter-fill {
+    stroke: CanvasText;
+  }
+}
+
+/* ---------- Paper ---------- */
+
+@media print {
+  :root {
+    --paper: #fff;
+    --surface: #fff;
+    --ink: #000;
+    --soft: #333;
+    --rule: #999;
+    --slab: #fff;
+    --slab-ink: #000;
+    --slab-soft: #333;
+    --slab-rule: #999;
+    --red: #9b1420;
+    --amber: #6b4500;
+    --blue: #1b3f9e;
+    --green: #12592f;
+  }
+
+  body {
+    font-size: 10.5pt;
+  }
+
+  .skip,
+  .toc,
+  .progress,
+  .alldone,
+  [data-nostore] {
+    display: none !important;
+  }
+
+  .lamp {
+    border: 2px solid #000;
+    background: none;
+    color: #000;
+  }
+
+  .lamp::after {
+    display: none;
+  }
+
+  .verdict {
+    padding-block: 1.5rem;
+  }
+
+  .hero {
+    border-bottom: 2px solid #000;
+  }
+
+  .foot {
+    border-top: 2px solid #000;
+  }
+
+  .band {
+    display: block;
+    padding-block: 1.25rem;
+  }
+
+  .band-head {
+    position: static;
+  }
+
+  .band-body {
+    margin-top: 1rem;
+  }
+
+  h2,
+  h3,
+  .how {
+    break-after: avoid;
+  }
+
+  .advice,
+  .progs li,
+  .good li,
+  .notes li,
+  .row,
+  .steps li,
+  .ficha {
+    break-inside: avoid;
+  }
+
+  .advice,
+  .advice.is-done {
+    border: 1px solid #999;
+    border-left: 0.4rem solid #000;
+  }
+
+  /* On paper a ticked item still shows its steps, and the box stays to tick by hand. */
+  .is-done .advice-body {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+
+  .is-done .advice-num,
+  .is-done .advice-title {
+    color: inherit;
+  }
+
+  .is-done .done {
+    border-color: #000;
+    background: none;
+    color: #000;
+  }
+
+  .done input::before {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
