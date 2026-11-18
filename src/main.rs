@@ -115,7 +115,10 @@ fn show(data: &model::ReportData, options: &Options) {
             console::print_summary(data, &path, opened);
         }
         Err(err) => {
-            console::problem(&format!("No pude guardar el reporte en {} ({err}). Te lo muestro aquí:", path.display()));
+            console::problem(&format!(
+                "No pude guardar el reporte en {} ({err}). Te lo muestro aquí:",
+                console::shown_path(&path)
+            ));
             console::print_full(data);
         }
     }

@@ -59,8 +59,33 @@ pub fn print_summary(data: &ReportData, saved_to: &Path, opened: bool) {
     } else {
         println!("  El reporte completo, con el paso a paso, quedó guardado. Ábrelo con doble clic:");
     }
-    println!("  {}", saved_to.display().to_string().dimmed());
+    println!("  {}", shown_path(saved_to).dimmed());
     println!();
+}
+
+/// A path ready to show, with the user's own folder written as
+/// `%USERPROFILE%`: the Windows user name never appears on screen (people
+/// share screenshots of this), and Explorer still opens the path as is.
+pub fn shown_path(path: &Path) -> String {
+    let home = std::env::var("USERPROFILE").unwrap_or_default();
+    hide_home(&path.display().to_string(), &home)
+}
+
+fn hide_home(path: &str, home: &str) -> String {
+    let path = path.replace('/', "\\");
+    let home = home.replace('/', "\\");
+    let home = home.trim_end_matches('\\');
+    if home.is_empty() {
+        return path;
+    }
+    match path.get(..home.len()) {
+        Some(prefix)
+            if prefix.eq_ignore_ascii_case(home) && path[home.len()..].chars().next().is_none_or(|c| c == '\\') =>
+        {
+            format!("%USERPROFILE%{}", &path[home.len()..])
+        }
+        _ => path,
+    }
 }
 
 /// The whole report as text.
@@ -254,4 +279,22 @@ fn owns_console() -> bool {
 #[cfg(not(windows))]
 fn owns_console() -> bool {
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::hide_home;
+
+    #[test]
+    fn the_user_folder_is_never_spelled_out() {
+        let home = r"C:\Users\Ana";
+        assert_eq!(
+            hide_home(r"C:\Users\Ana\AppData\Local\obs-doctor\reporte.html", home),
+            r"%USERPROFILE%\AppData\Local\obs-doctor\reporte.html"
+        );
+        assert_eq!(hide_home("c:/users/ana/reporte.html", home), r"%USERPROFILE%\reporte.html");
+        assert_eq!(hide_home(r"C:\Users\Anabel\reporte.html", home), r"C:\Users\Anabel\reporte.html");
+        assert_eq!(hide_home(r"D:\reporte.html", home), r"D:\reporte.html");
+        assert_eq!(hide_home(r"D:\reporte.html", ""), r"D:\reporte.html");
+    }
 }
