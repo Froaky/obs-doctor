@@ -1,6 +1,6 @@
 [package]
 name = "obs-doctor"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Revisa tu PC, tu internet y tu OBS y te dice, en simple, qué cambiar para transmitir mejor."
 license = "MIT"
