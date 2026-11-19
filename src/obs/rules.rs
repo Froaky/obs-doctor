@@ -256,10 +256,31 @@ fn check_bitrate(config: &ObsConfig, facts: &Facts, review: &mut Review) {
             ),
             steps,
         });
+    } else if sending as f64 > recommended as f64 * ABOVE_NEEDED {
+        // Not wrong, just more than the picture needs. Saying "va bien" here
+        // would contradict the suggested settings, which use `recommended`.
+        let mut steps = bitrate_steps(config, recommended);
+        steps.push("Haz un directo de prueba. Si no notas diferencia en la imagen, déjalo así.".to_string());
+        review.add(Advice {
+            id: "obs.bitrate.above-needed",
+            level: Level::Tip,
+            area: Area::Obs,
+            title: format!("Puedes bajar la calidad de envío a {recommended} kbps"),
+            why: format!(
+                "Tienes {sending} kbps para una imagen de {height}p a {} fps, y con unos {recommended} ya se ve bien. \
+                 Lo que sobra mejora poco la imagen, pero le pide más a tu internet y al de quien te mira: \
+                 con conexiones lentas, el directo se corta o se queda cargando.",
+                config.fps.round()
+            ),
+            steps,
+        });
     } else {
         review.ok(format!("La calidad de envío ({sending} kbps) va bien con el tamaño de tu imagen."));
     }
 }
+
+/// Above this many times the bitrate the picture needs, we suggest lowering it.
+const ABOVE_NEEDED: f64 = 1.5;
 
 fn bitrate_steps(config: &ObsConfig, target: u32) -> Vec<String> {
     let field = match config.mode {
@@ -705,6 +726,35 @@ mod tests {
             None,
         ));
         assert!(review.has("obs.bitrate.too-low"), "{:?}", review.ids());
+    }
+
+    #[test]
+    fn far_more_bitrate_than_the_picture_needs_is_a_tip_not_ok() {
+        // The default OBS picture on a 1366x768 laptop with 6000 kbps: 3000 is enough.
+        let review = review_of(&facts(
+            gaming_pc(),
+            strong(),
+            "[SimpleOutput]\nStreamEncoder=nvenc\nVBitrate=6000\n[Video]\nOutputCX=1092\nOutputCY=614\nFPSCommon=30\n",
+            None,
+            None,
+        ));
+        let advice = review.get("obs.bitrate.above-needed").expect("6000 for 614p30");
+        assert_eq!(advice.level, Level::Tip);
+        assert!(advice.title.contains("3000"), "{}", advice.title);
+        assert!(!review.good.iter().any(|g| g.contains("va bien")), "{:?}", review.good);
+    }
+
+    #[test]
+    fn a_bit_more_bitrate_than_needed_is_still_fine() {
+        let review = review_of(&facts(
+            gaming_pc(),
+            strong(),
+            "[SimpleOutput]\nStreamEncoder=nvenc\nVBitrate=4500\n[Video]\nOutputCX=1280\nOutputCY=720\nFPSCommon=30\n",
+            None,
+            None,
+        ));
+        assert!(!review.has("obs.bitrate.above-needed"), "{:?}", review.ids());
+        assert!(review.good.iter().any(|g| g.contains("va bien")), "{:?}", review.good);
     }
 
     #[test]
