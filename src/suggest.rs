@@ -360,7 +360,7 @@ mod tests {
     fn thirty_real_pcs() {
         use EncoderKind::{Amd as A, Intel as I, Nvidia as N, Software as S};
         let cases: Vec<(Hardware, (EncoderKind, u32, u32, bool))> = vec![
-            // Mateo's laptop: thin and light, integrated Iris Xe.
+            // A thin and light laptop with integrated Iris Xe.
             (
                 named(
                     "13th Gen Intel(R) Core(TM) i7-1355U",
