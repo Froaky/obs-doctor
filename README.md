@@ -18,12 +18,14 @@ Con eso arma una lista de cambios ordenada por importancia (importante, recomend
 
 ## Cómo usarlo
 
-1. Descarga `obs-doctor.exe`.
-2. Ábrelo con doble clic.
+1. Descarga el `.exe` de la [última versión](https://github.com/Froaky/obs-doctor/releases/latest).
+2. Ábrelo con doble clic. Si aparece "Windows protegió su PC", toca **Más información** y después **Ejecutar de todas formas**: sale porque el programa todavía no está firmado (ver [Code signing policy](#code-signing-policy)).
 3. Se abre el reporte en tu navegador. Lee los consejos y aplica los que quieras. Puedes marcar cada uno como "Listo" a medida que avanzas.
 4. Después de cambiar algo, haz un directo corto de prueba y vuelve a correr OBS Doctor para ver si mejoró.
 
 El reporte se guarda en `%LOCALAPPDATA%\obs-doctor\reporte.html`. Es un solo archivo que funciona sin internet.
+
+No se instala. Para quitarlo, borra el `.exe` y la carpeta `%LOCALAPPDATA%\obs-doctor`.
 
 ### Opciones
 
@@ -82,6 +84,21 @@ Ideas para más adelante:
 - Medir la subida de tu internet con un servicio que lo permita.
 - Diagnóstico en vivo mientras transmites.
 - Linux y macOS.
+
+## Code signing policy
+
+La firma de los ejecutables con SignPath está en trámite: las versiones hasta la 0.2.1 no están firmadas. Cuando se apruebe, cada versión se firmará así:
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- **Cómo se compila:** cada versión se compila en GitHub Actions a partir de este repositorio, con [`.github/workflows/release.yml`](.github/workflows/release.yml). No se firman ejecutables compilados a mano.
+- **Aprobación:** cada pedido de firma se aprueba a mano, versión por versión.
+- **Autores** (pueden cambiar el código sin otra revisión): [Froaky](https://github.com/Froaky).
+- **Revisores** (revisan cada cambio de otras personas, como los pull requests): [Froaky](https://github.com/Froaky).
+- **Aprobadores** (aprueban cada firma): [Froaky](https://github.com/Froaky).
+- **Privacidad:** este programa no transfiere información a otros sistemas de la red, salvo que quien lo usa lo pida expresamente. El detalle está en [Privacidad](#privacidad).
+
+In English: release binaries are built by GitHub Actions from this repository and every signing request is approved manually. Committers, reviewers and approvers: [Froaky](https://github.com/Froaky). This program will not transfer any information to other networked systems unless specifically requested by the user.
 
 ## Licencia
 

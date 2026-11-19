@@ -32,12 +32,48 @@ jobs:
       - name: Build de release
         run: cargo build --release
 
+      # Signing turns itself on once the repository has the variable
+      # SIGNPATH_ORGANIZATION_ID and the secret SIGNPATH_API_TOKEN (see
+      # "Code signing policy" in the README). Until then releases go out
+      # unsigned, exactly as before.
+      - name: Subir el ejecutable para firmar
+        id: unsigned
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: obs-doctor-sin-firmar
+          path: target/release/obs-doctor.exe
+          if-no-files-found: error
+
+      - name: Firmar con SignPath (espera la aprobación a mano)
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'obs-doctor' }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG || 'release-signing' }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: signed
+
       - name: Preparar los archivos
         shell: pwsh
         run: |
+          $exe = "target/release/obs-doctor.exe"
+          if ("${{ vars.SIGNPATH_ORGANIZATION_ID }}" -ne "") {
+            $exe = "signed/obs-doctor.exe"
+            $signature = Get-AuthenticodeSignature $exe
+            if ($signature.Status -ne "Valid") {
+              Write-Error "El ejecutable firmado no tiene una firma válida: $($signature.Status)"
+              exit 1
+            }
+            Write-Host "Firmado por: $($signature.SignerCertificate.Subject)"
+          }
           $name = "obs-doctor-${{ github.ref_name }}-windows-x64.exe"
           New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item target/release/obs-doctor.exe "dist/$name"
+          Copy-Item $exe "dist/$name"
           $hash = (Get-FileHash "dist/$name" -Algorithm SHA256).Hash.ToLower()
           "$hash  $name" | Out-File -Encoding ascii "dist/$name.sha256"
           Get-Content "dist/$name.sha256"
@@ -46,4 +82,5 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" (Get-ChildItem dist).FullName --title "OBS Doctor ${{ github.ref_name }}" --generate-notes --verify-tag
+        run: |
+          gh release create "${{ github.ref_name }}" (Get-ChildItem dist).FullName --title "OBS Doctor ${{ github.ref_name }}" --notes "Code signing policy: https://github.com/Froaky/obs-doctor#code-signing-policy" --generate-notes --verify-tag
